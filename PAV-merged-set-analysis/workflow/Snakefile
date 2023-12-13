@@ -1,0 +1,12 @@
+include: "rules/consensus-haplotypes.smk"
+include: "rules/plotting.smk"
+
+samples = [line.split()[0] for line in open(config["single_vcfs"], 'r')]
+
+read_samples = [line.split()[0] for line in open(config["reads"], 'r')]
+assembly_qvs = config['assembly_qvs']
+
+rule all:
+	input:
+		expand("results/evaluation/{calls}_{sample}_hap{haplotype}.txt", calls=["merged", "single", "genome"], sample = [s for s in samples if s in read_samples], haplotype=["1", "2"]),
+		expand("results/evaluation/{plot}.pdf", plot = ["qv-values", "qv-values_with-assemblies"] if assembly_qvs != "" else ["qv-values"])
