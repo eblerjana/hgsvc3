@@ -3,13 +3,13 @@
 
 ## Pipeline
 
-We our benchmarking pipeline at: https://github.com/eblerjana/genotyping-pipelines/tree/main/benchmarking-pipeline (commit: d9ff614).
-Config file used: config.yaml (stored in this folder)
- * Biallelic VCF: pav_variants_batch1_alt.vcf.gz, produced from PAV calls as described below
- * Mulitallelic VCF: pangenome.vcf.gz, produced from PAV calls as described in folder ../PanGenie-vcf-preparation
- * reference genome: downloaded from http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC2/technical/reference/20200513_hg38_NoALT/hg38.no_alt.fa.gz
- * Pilot samples / reads: genotyping-pilot-reads.tsv (stored in this folder). "1000GP high-coverage cohorts" reads downloaded from EBI/ENA and merged into one file per sample.
- * PanGenie: version v3.0.1 (commit: e981195)
+We used our benchmarking pipeline at: https://github.com/eblerjana/genotyping-pipelines/tree/main/benchmarking-pipeline (commit: d9ff614).      
+Config file used: `` config.yaml``  (stored in this folder)
+ * **Biallelic VCF**: `` pav_variants_batch1_alt.vcf.gz`` , produced from PAV calls as described below
+ * **Mulitallelic VCF**: `` pangenome.vcf.gz`` , produced from PAV calls as described in folder `` ../PanGenie-vcf-preparation`` 
+ * **reference genome**: downloaded from http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC2/technical/reference/20200513_hg38_NoALT/hg38.no_alt.fa.gz
+ * **Pilot samples / reads**: `` genotyping-pilot-reads.tsv``  (stored in this folder). "1000GP high-coverage cohorts" reads downloaded from EBI/ENA and merged into one file per sample.
+ * **PanGenie**: version v3.0.1 (commit: e981195)
 
 
 ## PAV data
@@ -27,4 +27,6 @@ https://storage.googleapis.com/jax-beck-pub/hgsvc3/variant_calls/batch1/variants
 
 and merged into a single VCF using the command:
 
+``` bat
 bcftools concat -a <files> | bgzip > pav_variants_batch1_alt.vcf.gz
+```
