@@ -1,4 +1,4 @@
-# Analysis of PAV merged calls
+# Inputs used for HGSVC3 analyses
 
 ## Pipeline
 
