@@ -3,7 +3,7 @@
 
 ## Pipeline
 
-We used our benchmarking pipeline at: https://github.com/eblerjana/genotyping-pipelines/tree/main/benchmarking-pipeline (commit: d9ff614).      
+We used our benchmarking pipeline at: https://github.com/eblerjana/genotyping-pipelines/tree/main/benchmarking-pipeline (commit: 4ff6af2).      
 Config file used: `` config.yaml``  (stored in this folder)
  * **Biallelic VCF**: `` pav_variants_batch1_alt.vcf.gz`` , produced from PAV calls as described below
  * **Mulitallelic VCF**: `` pangenome.vcf.gz`` , produced from PAV calls as described in folder `` ../PanGenie-vcf-preparation`` 
