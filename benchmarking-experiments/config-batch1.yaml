@@ -3,8 +3,8 @@
 
 callsets:
  hgsvc3-hg38:
-   multi: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/prepare-vcf-PAV/results-freeze1/pangenome/pangenome.vcf.gz"
-   bi: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/pav-calls-freeze1/pav_variants_freeze1_alt.vcf.gz"
+   multi: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/prepare-vcf-PAV/results-Nov23/pangenome/pangenome.vcf.gz"
+   bi: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/pav-calls/pav_variants_batch1_alt.vcf.gz"
    reference: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/reference/hg38.no_alt.fa"
    variants:
      - snp 
@@ -51,6 +51,24 @@ callsets:
      - NA20355
      - HG00733
      - HG02818
+ cactus-hg38:
+   multi: "/gpfs/project/projects/medbioinf/users/ebler/minigraph-cactus-paper/genotyping-experiments-hg38/results/data/vcf/cactus-100000/cactus_filtered_ids.vcf.gz"
+   bi: "/gpfs/project/projects/medbioinf/users/ebler/minigraph-cactus-paper/genotyping-experiments-hg38/results/data/vcf/cactus-100000/cactus_filtered_ids_biallelic.vcf.gz"
+   reference: "/gpfs/project/projects/medbioinf/users/ebler/minigraph-cactus-paper/genotyping-experiments-hg38/results/data/fasta/hg38.fa"
+   variants:
+     - snp 
+     - indels
+     - large-deletion
+     - large-insertion
+     - large-complex
+   repeat_regions: "resources/ucsc-simple-repeats.bed"
+   leave_one_out_samples:
+     - HG00438
+     - HG02717
+     - NA20129
+     - HG03453
+     - HG00733
+     - HG02818 
 
 
 # read data. File required that specifies a sample name, path to FASTA/FASTQ data and superpopulation:
@@ -64,9 +82,7 @@ pangenie: {}
 
 # PanGenie command to be used for not yet released version of PanGenie (leave empty for now)
 pangenie-modules:
- pangenie-45: "singularity exec --bind /:/hilbert eblerjana_eblerjana_pangenie-e981195.sif PanGenie"
- pangenie-80: "singularity exec --bind /:/hilbert eblerjana_eblerjana_pangenie-e981195.sif PanGenie -a 80"
- pangenie-full: "singularity exec --bind /:/hilbert eblerjana_eblerjana_pangenie-e981195.sif PanGenie -a 108"
+ pangenie: "singularity exec --bind /:/hilbert eblerjana_eblerjana_pangenie-e981195.sif PanGenie"
 
 
 # Downsampling coverages for leave-one-out experiment. If reads shall not be downsampled, leave empty.
