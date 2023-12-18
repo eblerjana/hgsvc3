@@ -15,10 +15,10 @@ rule plot_result_with_assemblies:
 	Plot merged + single QV values.
 	"""
 	input:
-		computed_qvs = expand( "results/evaluation/{calls}_{sample}_hap{haplotype}.txt", calls = ["merged", "single", "genome"], sample = samples, haplotype = [1,2]),
+		computed_qvs = expand( "results/{{region}}/evaluation/{calls}_{sample}_hap{haplotype}.txt", calls = ["merged", "single", "genome"], sample = samples, haplotype = [1,2]),
 		given_qvs = config['assembly_qvs']
 	output:
-		"results/evaluation/qv-values_with-assemblies.pdf"
+		"results/{region}/evaluation/qv-values_with-assemblies.pdf"
 	conda:
 		"../env/bcftools.yml"
 	shell:
@@ -33,9 +33,9 @@ rule plot_result_no_assemblies:
 	Plot merged + single QV values.
 	"""
 	input:
-		computed_qvs = expand( "results/evaluation/{calls}_{sample}_hap{haplotype}.txt", calls = ["merged", "single", "genome"], sample = samples, haplotype = [1,2])
+		computed_qvs = expand( "results/{{region}}/evaluation/{calls}_{sample}_hap{haplotype}.txt", calls = ["merged", "single", "genome"], sample = samples, haplotype = [1,2])
 	output:
-		"results/evaluation/qv-values.pdf"
+		"results/{region}/evaluation/qv-values.pdf"
 	conda:
 		"../env/bcftools.yml"
 	shell:

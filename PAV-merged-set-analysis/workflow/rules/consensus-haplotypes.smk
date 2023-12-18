@@ -20,18 +20,45 @@ samples = [s for s in all_samples if s in read_samples]
 yak = config['yak']
 
 
+
+######################################
+# prepare BED files for given regions
+######################################
+
+rule prepare_bed_easy:
+	"""
+	Prepare BED files: (callable_regions - region) intersected with giab_easy regions
+	"""
+	input:
+		callable_bed = lambda wildcards: callable_regions[(wildcards.sample, wildcards.hap)],
+		regions = lambda wildcards: config['bed'][wildcards.region],
+#		easy = config['giab_easy_regions']
+	output:
+		result = "results/{region}/bed/regions/{sample}_{hap}_{region}.bed.gz",
+#		tmp = temp("results/{region}/bed/regions/tmp_{sample}_{hap}_{region}.bed")
+	conda:
+		"../env/bcftools.yml"
+	resources:
+		mem_total_mb=50000
+	shell:
+		"""
+		bedtools subtract -a {input.callable_bed} -b {input.regions} | bgzip > {output.result}
+		"""
+
+
+
 rule compute_complement:
 	"""
 	This produces BED files defining all regions outside of the
 	callable regions.
 	"""
 	input:
-		bed = lambda wildcards: callable_regions[(wildcards.sample, wildcards.hap)],
+		bed = lambda wildcards: callable_regions[(wildcards.sample, wildcards.hap)] if wildcards.region == "all" else "results/{region}/bed/regions/{sample}_{hap}_{region}.bed.gz",
 		fai = config["reference"] + ".fai",
 	output:
-		tmp_bed = temp("results/bed/{sample}_{hap}_uncallable_tmp.bed"),
-		tmp_fai = temp("results/bed/{sample}_{hap}_genome.bed"),
-		bed = "results/bed/{sample}_{hap}_uncallable.bed"
+		tmp_bed = temp("results/{region}/bed/{sample}_{hap}_uncallable_tmp.bed"),
+		tmp_fai = temp("results/{region}/bed/{sample}_{hap}_genome.bed"),
+		bed = "results/{region}/bed/{sample}_{hap}_uncallable.bed"
 	conda:
 		"../env/bcftools.yml"
 	shell:
@@ -48,14 +75,16 @@ rule mask_genome:
 	"""
 	input:
 		reference = config["reference"],
-		bed = "results/bed/{sample}_{hap}_uncallable.bed"
+		bed = "results/{region}/bed/{sample}_{hap}_uncallable.bed"
 	output:
-		fasta = temp("results/genome/genome_{sample}_hap{hap}_masked.fasta"),
-		fasta_gz = temp("results/genome/genome_{sample}_hap{hap}_masked.fasta.gz")
+		fasta = temp("results/{region}/genome/genome_{sample}_hap{hap}_masked.fasta"),
+		fasta_gz = temp("results/{region}/genome/genome_{sample}_hap{hap}_masked.fasta.gz")
 	log:
-		"results/genome/{sample}_{hap}_genome.log"
+		"results/{region}/genome/{sample}_{hap}_genome.log"
 	conda:
 		"../env/bcftools.yml"
+	resources:
+		mem_total_mb = 10000
 	shell:
 		"""
 		bedtools maskfasta -fi {input.reference} -fo {output.fasta} -bed {input.bed} &> {log}
@@ -70,14 +99,14 @@ rule compute_consensus:
 	"""
 	input:
 		vcf = lambda wildcards: config["merged_set"] if wildcards.calls == "merged" else single_calls[wildcards.sample],
-		reference = "results/genome/genome_{sample}_hap{hap}_masked.fasta",
-		uncallable = "results/bed/{sample}_{haplotype}_uncallable.bed"
+		reference = "results/{region}/genome/genome_{sample}_hap{haplotype}_masked.fasta",
+		uncallable = "results/{region}/bed/{sample}_{haplotype}_uncallable.bed"
 	output:
-		fasta = temp("results/{calls}/{calls}_{sample}_hap{haplotype}_masked.fasta.gz"),
-		tmp = temp("results/{calls}/{calls}_{sample}_hap{haplotype}.vcf.gz"),
-		tmp_tbi = temp("results/{calls}/{calls}_{sample}_hap{haplotype}.vcf.gz.tbi")
+		fasta = temp("results/{region}/{calls}/{calls}_{sample}_hap{haplotype}_masked.fasta.gz"),
+		tmp = temp("results/{region}/{calls}/{calls}_{sample}_hap{haplotype}.vcf.gz"),
+		tmp_tbi = temp("results/{region}/{calls}/{calls}_{sample}_hap{haplotype}.vcf.gz.tbi")
 	log:
-		"results/{calls}/{calls}_{sample}_hap{haplotype}_masked.log"
+		"results/{region}/{calls}/{calls}_{sample}_hap{haplotype}_masked.log"
 	conda:
 		"../env/bcftools.yml"
 	wildcard_constraints:
@@ -100,12 +129,12 @@ rule remove_masked_regions:
 	have been masked by Ns in the earlier steps.
 	"""
 	input:
-		"results/{calls}/{calls}_{sample}_hap{haplotype}_masked.fasta.gz"
+		"results/{region}/{calls}/{calls}_{sample}_hap{haplotype}_masked.fasta.gz"
 	output:
-		fasta_gz = "results/{calls}/{calls}_{sample}_hap{haplotype}.fasta.gz",
-		fasta = temp("results/{calls}/{calls}_{sample}_hap{haplotype}.fasta")
+		fasta_gz = "results/{region}/{calls}/{calls}_{sample}_hap{haplotype}.fasta.gz",
+		fasta = temp("results/{region}/{calls}/{calls}_{sample}_hap{haplotype}.fasta")
 	log:
-		"results/{calls}/{calls}_{sample}_hap{haplotype}.log"
+		"results/{region}/{calls}/{calls}_{sample}_hap{haplotype}.log"
 	wildcard_constraints:
 		calls = "merged|single|genome",
 		haplotype = "1|2"
@@ -124,7 +153,7 @@ rule yak_counting:
 	input:
 		lambda wildcards: reads[wildcards.sample]
 	output:
-		"results/evaluation/read-counts/{sample}.yak"
+		"results/read-counts/{sample}.yak"
 	wildcard_constraints:
 	threads:
 		24
@@ -142,10 +171,10 @@ rule evaluate_assemblies:
 	Compute QV estimates using yak.
 	"""
 	input:
-		assembly="results/{calls}/{calls}_{sample}_hap{haplotype}.fasta.gz",
-		counts="results/evaluation/read-counts/{sample}.yak"
+		assembly="results/{region}/{calls}/{calls}_{sample}_hap{haplotype}.fasta.gz",
+		counts="results/read-counts/{sample}.yak"
 	output:
-		"results/evaluation/{calls}_{sample}_hap{haplotype}.txt"
+		"results/{region}/evaluation/{calls}_{sample}_hap{haplotype}.txt"
 	wildcard_constraints:
 		calls = "merged|single|genome",
 		haplotype = "1|2"

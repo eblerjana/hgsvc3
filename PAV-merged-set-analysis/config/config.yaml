@@ -12,10 +12,20 @@ reads: "/path/to/reads.tsv"
 # reference genome underlying calls
 reference: "/path/to/reference.fa"
 
+# path to yak executable
+yak: "./yak/yak"
+
+
+############################################
+#  Optional arguments
+############################################
+
 # OPTIONAL: precomputed QVs for assemblies
 # format: <H1|H2> <sample-name> <QV value>.
 # If not available, set to: ""
-assembly_qvs: "/path/to/assembly_qvs.tsv"
+assembly_qvs: "/path/to/precomputed-qvs.tsv"
 
-# path to yak executable
-yak: "./yak/yak"
+# OPTIONAL: regions to be considered.
+# If not available, set to: {}
+bed:
+ regionname: "/path/to/region.bed"

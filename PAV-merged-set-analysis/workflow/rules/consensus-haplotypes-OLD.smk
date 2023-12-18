@@ -50,15 +50,17 @@ rule mask_genome:
 		reference = config["reference"],
 		bed = "results/bed/{sample}_{hap}_uncallable.bed"
 	output:
-		temp("results/genome/{sample}_{hap}_genome.fa")
+		fasta = temp("results/genome/genome_{sample}_hap{hap}_masked.fasta"),
+		fasta_gz = temp("results/genome/genome_{sample}_hap{hap}_masked.fasta.gz")
 	log:
 		"results/genome/{sample}_{hap}_genome.log"
 	conda:
 		"../env/bcftools.yml"
 	shell:
 		"""
-		bedtools maskfasta -fi {input.reference} -fo {output} -bed {input.bed} &> {log}
-		samtools faidx {output}
+		bedtools maskfasta -fi {input.reference} -fo {output.fasta} -bed {input.bed} &> {log}
+		samtools faidx {output.fasta}
+		bgzip -c {output.fasta} > {output.fasta_gz}
 		"""
 
 
@@ -68,7 +70,7 @@ rule compute_consensus:
 	"""
 	input:
 		vcf = lambda wildcards: config["merged_set"] if wildcards.calls == "merged" else single_calls[wildcards.sample],
-		reference = "results/genome/{sample}_{haplotype}_genome.fa",
+		reference = "results/genome/genome_{sample}_hap{hap}_masked.fasta",
 		uncallable = "results/bed/{sample}_{haplotype}_uncallable.bed"
 	output:
 		fasta = temp("results/{calls}/{calls}_{sample}_hap{haplotype}_masked.fasta.gz"),
@@ -105,7 +107,7 @@ rule remove_masked_regions:
 	log:
 		"results/{calls}/{calls}_{sample}_hap{haplotype}.log"
 	wildcard_constraints:
-		calls = "merged|single",
+		calls = "merged|single|genome",
 		haplotype = "1|2"
 	shell:
 		"""
@@ -145,7 +147,7 @@ rule evaluate_assemblies:
 	output:
 		"results/evaluation/{calls}_{sample}_hap{haplotype}.txt"
 	wildcard_constraints:
-		calls = "merged|single",
+		calls = "merged|single|genome",
 		haplotype = "1|2"
 	resources:
 		mem_total_mb = 80000,

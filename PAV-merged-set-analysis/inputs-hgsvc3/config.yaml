@@ -12,10 +12,23 @@ reads: "reads.tsv"
 # reference genome underlying calls
 reference: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/reference/hg38.no_alt.fa"
 
+# path to yak executable
+yak: "./yak/yak"
+
+
+
+############################################
+#  Optional arguments
+############################################
+
 # OPTIONAL: precomputed QVs for assemblies
 # format: <H1|H2> <sample-name> <QV value>.
 # If not available, set to: ""
 assembly_qvs: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/hgsvc3_varcall_qvest.tsv"
 
-# path to yak executable
-yak: "./yak/yak"
+# OPTIONAL: regions to be considered.
+# If not available, set to: {}
+bed:
+ segdups: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/bed/ucsc-segdups-hg38-merged.bed"
+
+#giab_easy_regions: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/bed/GRCh38_notinalldifficultregions.bed"

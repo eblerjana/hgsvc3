@@ -55,7 +55,7 @@ y_assembly = []
 
 labels = []
 
-for sample in samples:
+for sample in sorted(list(samples)):
 	for haplotype in ['hap1', 'hap2']:
 		if sample == "HG00732":
 			continue
