@@ -1,2 +1,3 @@
-# hgsvc3
-Code and pipelines used for HGSVC3 experiments
+# HGSVC3 experiments
+
+This repository documents experiments run for HGSVC3 as well as pipelines and parameters used.
