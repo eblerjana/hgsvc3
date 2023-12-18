@@ -3,7 +3,7 @@ merged_set: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/pav-calls/
 
 # TSV file specifying paths to single-sample VCFs
 # format:   <sample>   </path/to/calls.vcf.gz>  </path/to/callable-regions.bed> 
-single_vcfs: "single-sample-files.txt"
+single_vcfs: "batch1_single-sample-files.txt"
 
 # TSV file specifying paths to FASTA/Q reads
 # format: <sample>   </path/to/reads.fa>
