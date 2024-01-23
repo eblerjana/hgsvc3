@@ -1,4 +1,5 @@
 import sys
+from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 import argparse
 
@@ -66,17 +67,30 @@ for sample in sorted(list(samples)):
 		if args.assembly:
 			y_assembly.append(assembly[sample + '_' + haplotype])
 
-x = [i*2 for i in range(len(labels))]
 
+with PdfPages(args.outname) as pdf:
+	x = [i*2 for i in range(len(labels))]
 
-plt.figure(figsize=(20,10))
-plt.plot(x, y_merged, marker = 's', label = 'merged calls', color = '#377eb8')
-plt.plot(x, y_single, marker = 'd', label = 'single sample calls', color = '#ff7f00')
-plt.plot(x, y_genome, marker= '^', label = 'reference sequence', color = '#4daf4a')
-if args.assembly:
-	plt.plot(x, y_assembly, marker= 'o', label = 'assembly', color = '#f781bf')
-plt.xticks(x, labels, rotation = 'vertical')
-plt.legend()
-plt.ylabel('QV')
-plt.tight_layout()
-plt.savefig(args.outname)			
+	plt.figure(figsize=(20,10))
+	plt.plot(x, y_merged, marker = 's', label = 'merged calls', color = '#377eb8')
+	plt.plot(x, y_single, marker = 'd', label = 'single sample calls', color = '#ff7f00')
+	plt.plot(x, y_genome, marker= '^', label = 'reference sequence', color = '#4daf4a')
+	if args.assembly:
+		plt.plot(x, y_assembly, marker= 'o', label = 'assembly', color = '#f781bf')
+	plt.xticks(x, labels, rotation = 'vertical')
+	plt.legend()
+	plt.ylabel('QV')
+	plt.tight_layout()
+	pdf.savefig()
+	plt.close()
+
+	plt.figure()
+	if args.assembly:
+		plt.boxplot([y_assembly, y_single, y_merged, y_genome])
+		plt.xticks([1,2,3,4], ['assembly', 'single sample calls', 'merged calls', 'reference sequence'], rotation='vertical')
+	else:
+		plt.boxplot([y_single, y_merged, y_genome])
+		plt.xticks([1,2,3], ['single sample calls', 'merged_calls', 'reference sequence'], rotation='vertical')
+	plt.ylabel('QV')
+	plt.tight_layout()
+	pdf.savefig()
