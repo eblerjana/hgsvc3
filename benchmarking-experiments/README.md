@@ -4,7 +4,7 @@
 ## Pipeline
 
 
-We used our benchmarking pipeline at: https://github.com/eblerjana/genotyping-pipelines/tree/main/benchmarking-pipeline (commit: 4a74e3c).      
+We used our benchmarking pipeline at: https://github.com/eblerjana/genotyping-pipelines/tree/main/benchmarking-pipeline (commit: 48e4d2e).      
 
 Config file used: `` config.yaml``  (stored in this folder)
 

@@ -3,7 +3,7 @@
 
 ## Pipeline
 
-We used our pipeline at: https://github.com/eblerjana/genotyping-pipelines/tree/main/prepare-vcf-PAV (commit: 4a74e3c).   
+We used our pipeline at: https://github.com/eblerjana/genotyping-pipelines/tree/main/prepare-vcf-PAV (commit: 48e4d2e).   
 
 ### Batch1:
 
