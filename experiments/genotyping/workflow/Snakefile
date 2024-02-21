@@ -1,0 +1,84 @@
+configfile: "config/config.yaml"
+
+CALLSETS = config['callsets']
+VCFBUB = config["vcfbub"]
+READS = config['reads']
+PANGENIE = config['pangenie']
+PANGENIE_MODULES = config['pangenie-modules']
+DOWNSAMPLING = config['downsampling']
+POPULATIONS = config['reads']
+
+RESULTS_MC_VCF = config['results'] + '/prepare-vcf-MC'
+RESULTS_BENCH = config['results'] + '/benchmarking-pipeline'
+RESULTS_SV_COUNTS = config['results'] + 'sv-count-comparison'
+
+coverages = ['full'] + config['downsampling']
+versions_to_run = [v for v in config['pangenie'].keys()] + [v for v in config['pangenie-modules'].keys()]
+
+for callset in CALLSETS.keys():
+	CALLSETS[callset]['multi'] = "{results}/vcf/{caller}/{caller}_filtered_ids.vcf.gz".format(results = RESULTS_MC_VCF, caller = callset)
+	CALLSETS[callset]['bi'] = "{results}/vcf/{caller}/{caller}_filtered_ids_biallelic.vcf.gz".format(results = RESULTS_MC_VCF, caller = callset)
+
+
+GENOTYPED_SETS = config['genotyped_sets_external']
+for callset in CALLSETS.keys():
+	for version in versions_to_run:
+		for coverage in coverages:
+			assert callset not in GENOTYPED_SETS
+			GENOTYPED_SETS[callset] = {}
+			GENOTYPED_SETS[callset]['vcf'] = "{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/filtered/all-samples_bi_all_lenient.vcf.gz".format(results = RESULTS_BENCH, callset = callset, version = version, coverage = coverage)
+			GENOTYPED_SETS[callset]['collapse'] = True
+			GENOTYPED_SETS[callset]['reference'] = CALLSETS[callset]['reference']
+
+
+include: 'rules/mc-vcf.smk'
+include: 'rules/leave-one-out.smk'
+include: 'rules/population-typing.smk'
+include: 'rules/population-evaluation.smk'
+include: "rules/compute-sv-counts-collapse.smk"
+
+
+
+rule all:
+	input:
+		expand("{results}/vcf/{caller}/{caller}_filtered_ids.vcf.gz", results = RESULTS_MC_VCF, caller = CALLSETS.keys()),
+		expand("{results}/vcf/{caller}/{caller}_filtered_ids_biallelic.vcf.gz", results = RESULTS_MC_VCF, caller = CALLSETS.keys()),
+		
+		
+		expand("{results}/leave-one-out/{callset}/plots/comparison-versions/{metric}/{metric}_{coverage}_{regions}.pdf", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], metric = ['concordance', 'precision-recall-typable', 'untyped', 'concordance-vs-untyped'], coverage = coverages, regions = ['biallelic', 'multiallelic']),
+		expand("{results}/leave-one-out/{callset}/plots/comparison-coverages/{metric}/{metric}_{version}_{regions}.pdf", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], metric = ['concordance', 'precision-recall-typable', 'untyped'], version = versions_to_run, regions = ['biallelic', 'multiallelic']),
+		expand("{results}/leave-one-out/{callset}/plots/resources/resources_{callset}-{coverage}.pdf", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], coverage = coverages),
+		expand("{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/whole-genome/all-samples_{what}_all.vcf.gz", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], what = ['bi'], version = versions_to_run, coverage = coverages),
+		expand("{results}/population-typing/{callset}/sample-index.tsv", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()]),
+		expand("{results}/population-typing/{callset}/{version}/{coverage}/evaluation/statistics/plot_bi_all_filters.tsv", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], version = versions_to_run, coverage = ['full']),
+		expand("{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/filtered/all-samples_bi_all_lenient.vcf.gz", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], version = versions_to_run, coverage = ['full']),
+
+		expand("{results}/sv-count-comparison.pdf", results = RESULTS_SV_COUNTS),
+		expand("{results}/length-distribution.pdf", results = RESULTS_SV_COUNTS)
+
+
+rule prepare_mc_vcf:
+	input:
+		expand("{results}/vcf/{caller}/{caller}_filtered_ids.vcf.gz", results = RESULTS_MC_VCF, caller = CALLSETS.keys()),
+		expand("{results}/vcf/{caller}/{caller}_filtered_ids_biallelic.vcf.gz", results = RESULTS_MC_VCF, caller = CALLSETS.keys())
+
+
+rule leave_one_out:
+	input:
+		expand("{results}/leave-one-out/{callset}/plots/comparison-versions/{metric}/{metric}_{coverage}_{regions}.pdf", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], metric = ['concordance', 'precision-recall-typable', 'untyped', 'concordance-vs-untyped'], coverage = coverages, regions = ['biallelic', 'multiallelic']),
+		expand("{results}/leave-one-out/{callset}/plots/comparison-coverages/{metric}/{metric}_{version}_{regions}.pdf", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], metric = ['concordance', 'precision-recall-typable', 'untyped'], version = versions_to_run, regions = ['biallelic', 'multiallelic']),
+		expand("{results}/leave-one-out/{callset}/plots/resources/resources_{callset}-{coverage}.pdf", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], coverage = coverages),
+
+
+rule population_typing:
+	input:
+		expand("{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/whole-genome/all-samples_{what}_all.vcf.gz", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], what = ['bi'], version = versions_to_run, coverage = coverages),
+		expand("{results}/population-typing/{callset}/sample-index.tsv", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()]),
+		expand("{results}/population-typing/{callset}/{version}/{coverage}/evaluation/statistics/plot_bi_all_filters.tsv", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], version = versions_to_run, coverage = ['full']),
+		expand("{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/filtered/all-samples_bi_all_lenient.vcf.gz", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], version = versions_to_run, coverage = ['full'])
+
+
+rule sv_count_comparison:
+	input:
+		expand("{results}/sv-count-comparison.pdf", results = RESULTS_SV_COUNTS),
+		expand("{results}/length-distribution.pdf", results = RESULTS_SV_COUNTS)
