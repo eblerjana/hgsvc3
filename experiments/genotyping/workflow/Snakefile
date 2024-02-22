@@ -2,7 +2,6 @@ import gzip
 configfile: "config/config.yaml"
 
 CALLSETS = config['callsets']
-VCFBUB = config["vcfbub"]
 READS = config['reads']
 PANGENIE = config['pangenie']
 PANGENIE_MODULES = config['pangenie-modules']
@@ -38,7 +37,6 @@ for callset in CALLSETS.keys():
                         PANEL_SAMPLES[callset] = [s for s in line.strip().split()[9:] if s not in ['GRCh38', 'CHM13']]
                         break
 
-print(PANEL_SAMPLES)
 
 
 include: 'rules/mc-vcf.smk'
