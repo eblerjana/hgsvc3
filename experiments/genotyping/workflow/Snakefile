@@ -1,3 +1,4 @@
+import gzip
 configfile: "config/config.yaml"
 
 CALLSETS = config['callsets']
@@ -29,6 +30,15 @@ for callset in CALLSETS.keys():
 			GENOTYPED_SETS[callset]['vcf'] = "{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/filtered/all-samples_bi_all_lenient.vcf.gz".format(results = RESULTS_BENCH, callset = callset, version = version, coverage = coverage)
 			GENOTYPED_SETS[callset]['collapse'] = True
 			GENOTYPED_SETS[callset]['reference'] = CALLSETS[callset]['reference']
+
+PANEL_SAMPLES = {}
+for callset in CALLSETS.keys():
+        for line in gzip.open(CALLSETS[callset]['vcf'], 'rt'):
+                if line.startswith("#CHROM"):
+                        PANEL_SAMPLES[callset] = [s for s in line.strip().split()[9:] if s not in ['GRCh38', 'CHM13']]
+                        break
+
+print(PANEL_SAMPLES)
 
 
 include: 'rules/mc-vcf.smk'
