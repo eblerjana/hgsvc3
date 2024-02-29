@@ -17,14 +17,13 @@ versions_to_run = [v for v in config['pangenie'].keys()] + [v for v in config['p
 
 for callset in CALLSETS.keys():
 	CALLSETS[callset]['multi'] = "{results}/vcf/{caller}/{caller}_filtered_ids.vcf.gz".format(results = RESULTS_MC_VCF, caller = callset)
-	CALLSETS[callset]['bi'] = "{results}/vcf/{caller}/{caller}_filtered_ids_biallelic.vcf.gz".format(results = RESULTS_MC_VCF, caller = callset)
-
+	CALLSETS[callset]['bi'] = "{results}/vcf/{caller}/{caller}_filtered_ids_biallelic.vcf.gz".format(results = RESULTS_MC_VCF, caller = callset
 
 GENOTYPED_SETS = config['genotyped_sets_external']
 for callset in CALLSETS.keys():
+	assert callset not in GENOTYPED_SETS
 	for version in versions_to_run:
 		for coverage in coverages:
-			assert callset not in GENOTYPED_SETS
 			GENOTYPED_SETS[callset] = {}
 			GENOTYPED_SETS[callset]['vcf'] = "{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/filtered/all-samples_bi_all_lenient.vcf.gz".format(results = RESULTS_BENCH, callset = callset, version = version, coverage = coverage)
 			GENOTYPED_SETS[callset]['collapse'] = True
