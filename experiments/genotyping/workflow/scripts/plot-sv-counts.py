@@ -45,6 +45,7 @@ def parse_vcf(filename, callsetname, outfile, length, sample_to_pop, annotations
 		# find allele frequency
 		info_field = { k.split('=')[0] : k.split('=')[1] for k in fields[7].split(';') if '=' in k }
 		assert 'AF' in info_field
+		print(line)
 		allele_freq = float(info_field['AF'])
 
 		af_category = ""
@@ -262,7 +263,8 @@ def run_plotting(vcfs, names, outname, length, populations, annotations, only_re
 					counts_c2.append(callset_to_values[(callset2, sample)][0])
 					pop_c1 = callset_to_values[(callset1, sample)][1]
 					pop_c2 = callset_to_values[(callset2, sample)][1]
-					assert pop_c1 == pop_c2 
+					assert pop_c1 == pop_c2
+					print(sample, callset1, callset2) 
 					colors.append(pop_to_color[pop_c1])
 				
 				plt.figure()
@@ -295,8 +297,8 @@ def parse_populations(filename):
 		if line.startswith('#'):
 			continue
 		fields = line.strip().split()
-		sample_name = fields[0]
-		population = fields[1]
+		sample_name = fields[1]
+		population = fields[6]
 		sample_to_pop[sample_name] = population
 	return sample_to_pop
 

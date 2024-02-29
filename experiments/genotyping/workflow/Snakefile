@@ -10,7 +10,7 @@ POPULATIONS = config['reads']
 
 RESULTS_MC_VCF = config['results'] + '/prepare-vcf-MC'
 RESULTS_BENCH = config['results'] + '/benchmarking-pipeline'
-RESULTS_SV_COUNTS = config['results'] + 'sv-count-comparison'
+RESULTS_SV_COUNTS = config['results'] + '/sv-count-comparison'
 
 coverages = ['full'] + config['downsampling']
 versions_to_run = [v for v in config['pangenie'].keys()] + [v for v in config['pangenie-modules'].keys()]
@@ -46,15 +46,20 @@ include: 'rules/population-evaluation.smk'
 include: "rules/compute-sv-counts-collapse.smk"
 
 
+def leave_one_out_plots(wildcards):
+	plots = []
+	for callset in CALLSETS.keys():
+		plots.extend( expand("{results}/leave-one-out/{callset}/plots/comparison-versions/{metric}/{metric}_{coverage}_{regions}.pdf", results=RESULTS_BENCH, callset=callset, metric=['concordance', 'precision-recall-typable', 'untyped', 'concordance-vs-untyped'], coverage=coverages, regions=['biallelic', 'multiallelic'] + [r for r in CALLSETS[callset]["regions"].keys()]))
+		plots.extend( expand("{results}/leave-one-out/{callset}/plots/comparison-coverages/{metric}/{metric}_{version}_{regions}.pdf", results=RESULTS_BENCH, callset=callset, metric=['concordance', 'precision-recall-typable', 'untyped'], version = versions_to_run, regions = ['biallelic', 'multiallelic'] + [r for r in CALLSETS[callset]["regions"].keys()]))
+	return plots
+
 
 rule all:
 	input:
 		expand("{results}/vcf/{caller}/{caller}_filtered_ids.vcf.gz", results = RESULTS_MC_VCF, caller = CALLSETS.keys()),
 		expand("{results}/vcf/{caller}/{caller}_filtered_ids_biallelic.vcf.gz", results = RESULTS_MC_VCF, caller = CALLSETS.keys()),
 		
-		
-		expand("{results}/leave-one-out/{callset}/plots/comparison-versions/{metric}/{metric}_{coverage}_{regions}.pdf", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], metric = ['concordance', 'precision-recall-typable', 'untyped', 'concordance-vs-untyped'], coverage = coverages, regions = ['biallelic', 'multiallelic']),
-		expand("{results}/leave-one-out/{callset}/plots/comparison-coverages/{metric}/{metric}_{version}_{regions}.pdf", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], metric = ['concordance', 'precision-recall-typable', 'untyped'], version = versions_to_run, regions = ['biallelic', 'multiallelic']),
+		leave_one_out_plots,
 		expand("{results}/leave-one-out/{callset}/plots/resources/resources_{callset}-{coverage}.pdf", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], coverage = coverages),
 		expand("{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/whole-genome/all-samples_{what}_all.vcf.gz", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], what = ['bi'], version = versions_to_run, coverage = coverages),
 		expand("{results}/population-typing/{callset}/sample-index.tsv", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()]),
@@ -73,8 +78,7 @@ rule prepare_mc_vcf:
 
 rule leave_one_out:
 	input:
-		expand("{results}/leave-one-out/{callset}/plots/comparison-versions/{metric}/{metric}_{coverage}_{regions}.pdf", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], metric = ['concordance', 'precision-recall-typable', 'untyped', 'concordance-vs-untyped'], coverage = coverages, regions = ['biallelic', 'multiallelic']),
-		expand("{results}/leave-one-out/{callset}/plots/comparison-coverages/{metric}/{metric}_{version}_{regions}.pdf", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], metric = ['concordance', 'precision-recall-typable', 'untyped'], version = versions_to_run, regions = ['biallelic', 'multiallelic']),
+		leave_one_out_plots,
 		expand("{results}/leave-one-out/{callset}/plots/resources/resources_{callset}-{coverage}.pdf", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], coverage = coverages),
 
 

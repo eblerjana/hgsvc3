@@ -18,9 +18,11 @@ callsets:
     - large-deletion
     - large-insertion
     - large-complex
-  repeat_regions: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/benchmarking-pipeline/resources/chm13v2.0_RepeatMasker_4.1.2p1.2022Apr14.bed"
+#  repeat_regions: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/benchmarking-pipeline/resources/chm13v2.0_RepeatMasker_4.1.2p1.2022Apr14.bed"
   leave_one_out_samples:
     - HG00171
+  regions:
+    repeats: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/benchmarking-pipeline/resources/chm13v2.0_RepeatMasker_4.1.2p1.2022Apr14.bed"
 
 
 # read data. File required that specifies a sample name, path to FASTA/FASTQ data and superpopulation:
