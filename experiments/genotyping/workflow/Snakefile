@@ -17,7 +17,8 @@ versions_to_run = [v for v in config['pangenie'].keys()] + [v for v in config['p
 
 for callset in CALLSETS.keys():
 	CALLSETS[callset]['multi'] = "{results}/vcf/{caller}/{caller}_filtered_ids.vcf.gz".format(results = RESULTS_MC_VCF, caller = callset)
-	CALLSETS[callset]['bi'] = "{results}/vcf/{caller}/{caller}_filtered_ids_biallelic.vcf.gz".format(results = RESULTS_MC_VCF, caller = callset
+	CALLSETS[callset]['bi'] = "{results}/vcf/{caller}/{caller}_filtered_ids_biallelic.vcf.gz".format(results = RESULTS_MC_VCF, caller = callset)
+
 
 GENOTYPED_SETS = config['genotyped_sets_external']
 for callset in CALLSETS.keys():
@@ -49,6 +50,7 @@ def leave_one_out_plots(wildcards):
 	plots = []
 	for callset in CALLSETS.keys():
 		plots.extend( expand("{results}/leave-one-out/{callset}/plots/comparison-versions/{metric}/{metric}_{coverage}_{regions}.pdf", results=RESULTS_BENCH, callset=callset, metric=['concordance', 'precision-recall-typable', 'untyped', 'concordance-vs-untyped'], coverage=coverages, regions=['biallelic', 'multiallelic'] + [r for r in CALLSETS[callset]["regions"].keys()]))
+		plots.extend( expand("{results}/leave-one-out/{callset}/plots/comparison-regions/{metric}/{metric}_{coverage}_{versions}.pdf", results=RESULTS_BENCH, callset=callset, metric=['concordance', 'precision-recall-typable', 'untyped'], coverage=coverages, versions=versions_to_run))
 		plots.extend( expand("{results}/leave-one-out/{callset}/plots/comparison-coverages/{metric}/{metric}_{version}_{regions}.pdf", results=RESULTS_BENCH, callset=callset, metric=['concordance', 'precision-recall-typable', 'untyped'], version = versions_to_run, regions = ['biallelic', 'multiallelic'] + [r for r in CALLSETS[callset]["regions"].keys()]))
 	return plots
 

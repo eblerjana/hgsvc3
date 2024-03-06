@@ -101,4 +101,3 @@ for line in gzip.open(args.vcf, 'rt'):
 				updated_genotypes.append('|'.join(new_alleles))
 		fields = fields[:9] + updated_genotypes
 		print('\t'.join(fields))
-
