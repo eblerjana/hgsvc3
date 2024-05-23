@@ -1,0 +1,8 @@
+name: shapeit
+channels:
+  - conda-forge
+  - bioconda
+  - main
+dependencies:
+  - bcftools
+  - shapeit5

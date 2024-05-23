@@ -1,0 +1,67 @@
+
+# multi-sample VCF with genotypes to be phased
+vcf: "TEST/geno.vcf.gz"
+
+# name of the ouput folder
+outname: "test"
+
+
+### shapeit phasing inputs ###
+
+# trio information
+fam: TEST/trios-no-NA.fam
+
+# whether or not to set low qual genotypes to missing
+low_qual_to_missing: True
+
+# genetic maps
+maps:
+ chr1: TEST/chr1.b38.gmap.gz
+# chr2: ../chr2.b38.gmap.gz
+# chr3: ../chr3.b38.gmap.gz
+# chr4: ../chr4.b38.gmap.gz
+# chr5: ../chr5.b38.gmap.gz
+# chr6: ../chr6.b38.gmap.gz
+# chr7: ../chr7.b38.gmap.gz
+# chr8: ../chr8.b38.gmap.gz
+# chr9: ../chr9.b38.gmap.gz
+# chr10: ../chr10.b38.gmap.gz
+# chr11: ../chr11.b38.gmap.gz
+# chr12: ../chr12.b38.gmap.gz
+# chr13: ../chr13.b38.gmap.gz
+# chr14: ../chr14.b38.gmap.gz
+# chr15: ../chr15.b38.gmap.gz
+# chr16: ../chr16.b38.gmap.gz
+# chr17: ../chr17.b38.gmap.gz
+# chr18: ../chr18.b38.gmap.gz
+# chr19: ../chr19.b38.gmap.gz
+# chr20: ../chr20.b38.gmap.gz
+# chr21: ../chr21.b38.gmap.gz
+# chr22: ../chr22.b38.gmap.gz
+# chrX: ../chrX.b38.gmap.gz
+
+
+
+####### Optional: combine input re-genotyped VCF with rare variants from existing phased VCF #######
+
+# panel samples underlying genotyped set
+panel_vcf: "TEST/panel.vcf.gz"
+
+# existing phased VCFs (one for each chromosome)
+phased_set:
+ chr1: "TEST/phase.vcf.gz"
+ 
+ 
+
+####### Optional: evaluate phasing based on these truthsets  ####### 
+ 
+
+truthsets: 
+ panel:
+   vcf: "TEST/panel.vcf.gz"
+   evaluation_samples:
+     - HG00096
+     - HG00171
+     - HG00268
+     - HG00358
+     - HG00438

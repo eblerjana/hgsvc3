@@ -1,0 +1,77 @@
+configfile: "config/config.yaml"
+
+GENOTYPES = config["vcf"]
+MAPS = config["maps"]
+FAM = config["fam"]
+
+PANEL_VCF = config["panel_vcf"]
+PHASED_SET = config["phased_set"]
+MERGED_GENOTYPES = {}
+SCAFFOLDS = {}
+TRUTHSETS = config["truthsets"]
+
+
+############################### sanity check inputs ###############################
+
+if PHASED_SET and MAPS:
+	# make sure same set of chromosomes is provided
+	if set(PHASED_SET.keys()) != set(MAPS.keys()):
+		raise Exception("Set of chromosomes provided for panel and maps differs.")
+
+
+
+########################## set up evaluation sample sets ##########################
+
+EVAL_SAMPLES = set([])
+for callset in TRUTHSETS:
+	for sample in TRUTHSETS[callset]["evaluation_samples"]:
+		EVAL_SAMPLES.add(sample)
+
+EVAL_SAMPLES = list(EVAL_SAMPLES)
+
+JOINT_EVAL_SAMPLES = None
+for callset in TRUTHSETS:
+	if not JOINT_EVAL_SAMPLES:
+		JOINT_EVAL_SAMPLES = set(TRUTHSETS[callset]["evaluation_samples"])
+	else:
+		JOINT_EVAL_SAMPLES.intersection(set(TRUTHSETS[callset]["evaluation_samples"]))
+
+###################################################################################
+
+	
+
+prepare_outname = config["outname"] + "/prepare-input-vcf"
+shapeit_outname = config["outname"] + "/shapeit"
+evaluation_outname = config["outname"] + "/evaluation"
+
+for chrom in PHASED_SET.keys():
+	MERGED_GENOTYPES[chrom] = "{results}/phasing-input_{chrom}.vcf.gz".format(results = prepare_outname, chrom = chrom)
+	SCAFFOLDS[chrom] = "{results}/filtered_phasing_{chrom}.vcf.gz".format(results = prepare_outname, chrom = chrom)
+
+include: "rules/prepare-phasing-vcf.smk"
+include: "rules/shapeit-phasing.smk"
+include: "rules/evaluate-phasing.smk"
+
+def phasing_output(wildcards):
+	outfiles = []
+	if PHASED_SET and MAPS:
+		outfiles.extend(expand("{results}/shapeit-scaffold/phased_shapeit-scaffold_{chrom}.bcf", results = shapeit_outname, chrom = [c for c in PHASED_SET.keys()]))
+	else:
+		outfiles.extend(expand("{results}/shapeit/phased_shapeit_{chrom}.bcf", results = shapeit_outname, chrom = [c for c in MAPS.keys()]))
+	return outfiles
+
+
+def evaluation_output(wildcards):
+	outfiles = []
+	for t in TRUTHSETS.keys():
+		outfiles.append("{results}/evaluation/{version}/evaluation_{version}_{truthset}.pdf".format(results=evaluation_outname, truthset=t, version= "shapeit-scaffold" if PHASED_SET and MAPS else "shapeit"))
+	if TRUTHSETS:
+		outfiles.append("{results}/evaluation/{version}/evaluation_{version}_multiway.pdf".format(results=evaluation_outname, version= "shapeit-scaffold" if PHASED_SET and MAPS else "shapeit"))
+	print(outfiles)
+	return outfiles
+
+rule all:
+	input:
+		expand("{results}/phasing-input_{chrom}.vcf.gz", results = prepare_outname, chrom = [c for c in PHASED_SET.keys()]),
+		phasing_output,
+		evaluation_output
