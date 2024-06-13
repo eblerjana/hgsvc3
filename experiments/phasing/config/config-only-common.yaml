@@ -4,7 +4,7 @@ vcf: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/experiments/genotyping
 reference: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/reference/chm13v2.0.fa"
 
 # name of the ouput folder
-outname: "results-with-rare"
+outname: "results-only-common"
 
 
 ### shapeit phasing inputs ###
@@ -45,35 +45,12 @@ maps:
 
 ####### Optional: combine input re-genotyped VCF with rare variants from existing phased VCF #######
 
-
-panel_vcf: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/experiments/genotyping-1kg/results/prepare-vcf-MC/vcf/MC-hgsvc3-hprc-chm13/MC-hgsvc3-hprc-chm13_filtered_ids_biallelic.vcf.gz"
+# panel samples underlying genotyped set
+panel_vcf: ""
 
 # existing phased VCFs (one for each chromosome)
-rare_variants:
- chr10: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr10.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr11: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr11.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr12: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr12.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr13: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr13.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr14: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr14.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr15: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr15.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr16: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr16.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr17: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr17.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr18: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr18.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr19: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr19.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr1: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr1.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr20: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr20.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr21: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr21.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr22: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr22.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr2: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr2.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr3: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr3.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr4: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr4.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr5: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr5.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr6: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr6.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr7: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr7.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr8: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr8.recalibrated.snp_indel.pass.filtered.vcf.gz
- chr9: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chr9.recalibrated.snp_indel.pass.filtered.vcf.gz
- chrX: /gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-genotypes/1KGP.CHM13v2.0.chrX.recalibrated.snp_indel.pass.filtered.vcf.gz
-
+rare_variants: {}
+ 
 
 ####### Optional: evaluate phasing based on these truthsets  ####### 
  
@@ -88,6 +65,7 @@ truthsets:
      - HG01596
      - HG02282
      - HG00171
+     - HG03009
      - NA19036
      - NA19347
      - NA19317
@@ -102,6 +80,7 @@ truthsets:
      - HG01596
      - HG02282
      - HG00171
+     - HG03009
      - NA19036
      - NA19347
      - NA19317

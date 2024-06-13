@@ -44,7 +44,8 @@ rule extract_intersection_samples_collapse:
 	input:
 		vcf= lambda wildcards: GENOTYPED_SETS[wildcards.source]['vcf'],
 		samples = "{results}/samples-intersection.tsv",
-		reference = lambda wildcards: GENOTYPED_SETS[wildcards.source]['reference']
+		reference = lambda wildcards: GENOTYPED_SETS[wildcards.source]['reference'],
+		fai = lambda wildcards: GENOTYPED_SETS[wildcards.source]['reference'] + ".fai"
 	output:
 		unmerged=temp("{results}/{source}/vcfs/tmp-{source}_intersection_full-unmerged.vcf.gz"),
 		merged="{results}/{source}/vcfs/{source}_intersection_full_collapsed.vcf.gz"
@@ -54,9 +55,10 @@ rule extract_intersection_samples_collapse:
 		mem_total_mb=80000,
 		runtime_hrs=23,
 		runtime_min=59
+	threads: 10
 	shell:
 		"""
-		bcftools view --samples-file {input.samples} {input.vcf} |  python3 workflow/scripts/extract-varianttype.py large | bgzip -c > {output.unmerged}
+		bcftools view --threads {threads} --samples-file {input.samples} {input.vcf} | bcftools reheader --fai {input.fai} | python3 workflow/scripts/extract-varianttype.py large | bgzip -c > {output.unmerged}
 		tabix -p vcf {output.unmerged}
 		truvari collapse -r 500 -p 0.95 -P 0.95 -s 50 -S 100000 -f {input.reference} -i {output.unmerged} | bcftools sort | bcftools view --min-ac 1 | bcftools +fill-tags -Oz -o {output.merged} -- -t AN,AC,AF
 		tabix -p vcf {output.merged}

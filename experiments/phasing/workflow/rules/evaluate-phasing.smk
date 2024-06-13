@@ -40,12 +40,14 @@ rule extract_sample_phasing:
 		"../envs/shapeit.yaml"
 	resources:
 		mem_total_mb = 50000,
-		runtime_hrs = 1
+		runtime_hrs = 2
 	params:
 		chrom = ','.join([c for c in MAPS.keys() if (not 'X' in c) and (not 'Y' in c)])
+	threads:
+		10
 	shell:
 		"""
-		bcftools view --samples {wildcards.sample} --regions {params.chrom} {input} | bcftools view --min-ac 1 | bgzip > {output.vcf}
+		bcftools view --threads {threads} --samples {wildcards.sample} --regions {params.chrom} {input} | bcftools view --min-ac 1 | bgzip > {output.vcf}
 		tabix -p vcf {output.vcf}
 		"""
 
@@ -68,11 +70,13 @@ rule extract_sample_truthset:
 	resources:
 		mem_total_mb = 50000,
 		runtime_hrs = 2
+	threads:
+		10
 	params:
 		chrom = ','.join([c for c in MAPS.keys() if (not 'X' in c) and (not 'Y' in c)])
 	shell:
 		"""
-		bcftools view --samples {wildcards.sample} --regions {params.chrom} {input} | bcftools view --min-ac 1 | bgzip > {output.vcf}
+		bcftools view --samples {wildcards.sample} --threads {threads} --regions {params.chrom} {input} | bcftools view --min-ac 1 | bgzip > {output.vcf}
 		tabix -p vcf {output.vcf}
 		"""
 		
@@ -87,8 +91,8 @@ rule evaluate:
 		phasing = "{results}/{version}/phased_{version}_{sample}.vcf.gz",
 		phasing_tbi = "{results}/{version}/phased_{version}_{sample}.vcf.gz.tbi"
 	output:
-		pair = "{results}/evaluation/{version}/evaluation_{version}_{sample}_{truthset}_pair.tsv",
-		multi = "{results}/evaluation/{version}/evaluation_{version}_{sample}_{truthset}_multi.tsv"
+		pair = "{results}/{version}/evaluation_{version}_{sample}_{truthset}_pair.tsv",
+		multi = "{results}/{version}/evaluation_{version}_{sample}_{truthset}_multi.tsv"
 	conda:
 		"../envs/whatshap.yaml"
 	wildcard_constraints:
@@ -100,7 +104,7 @@ rule evaluate:
 	params:
 		names = lambda wildcards: wildcards.version + "," + wildcards.truthset
 	log:
-		"{results}/evaluation/{version}/evaluation_{version}_{sample}_{truthset}.log"
+		"{results}/{version}/evaluation_{version}_{sample}_{truthset}.log"
 	shell:
 		"""
 		whatshap compare {input.phasing} {input.truthsets} --sample {wildcards.sample} --tsv-pairwise {output.pair} --tsv-multiway {output.multi} --names {params.names} &> {log}
@@ -112,13 +116,13 @@ rule plot_phasing_results:
 	Plot the switch error rates.
 	"""
 	input:
-		lambda wildcards: expand("{{results}}/evaluation/{{version}}/evaluation_{{version}}_{sample}_{{truthset}}_pair.tsv", sample = TRUTHSETS[wildcards.truthset]["evaluation_samples"])
+		lambda wildcards: expand("{{results}}/{{version}}/evaluation_{{version}}_{sample}_{{truthset}}_pair.tsv", sample = TRUTHSETS[wildcards.truthset]["evaluation_samples"])
 	output:
-		"{results}/evaluation/{version}/evaluation_{version}_{truthset}.pdf"
+		"{results}/{version}/evaluation_{version}_{truthset}.pdf"
 	wildcard_constraints:
 		truthset='|'.join([c for c in TRUTHSETS.keys()])
 	conda:
-		"../envs/plotting.yml"
+		"../envs/plotting.yaml"
 	shell:
 		"""
 		python3 workflow/scripts/plot-phasing-results.py -tsvfiles {input} -truthsetname {wildcards.truthset} -outname {output}
@@ -132,8 +136,8 @@ rule multiway_evaluation:
 		phasing = "{results}/{version}/phased_{version}_{sample}.vcf.gz",
 		phasing_tbi = "{results}/{version}/phased_{version}_{sample}.vcf.gz.tbi"
 	output:
-		pair = "{results}/evaluation/{version}/evaluation_{version}_{sample}_multiway_pair.tsv",
-		multi = "{results}/evaluation/{version}/evaluation_{version}_{sample}_multiway_multi.tsv"
+		pair = "{results}/{version}/evaluation_{version}_{sample}_multiway_pair.tsv",
+		multi = "{results}/{version}/evaluation_{version}_{sample}_multiway_multi.tsv"
 	conda:
 		"../envs/whatshap.yaml"
 	wildcard_constraints:
@@ -144,7 +148,7 @@ rule multiway_evaluation:
 	params:
 		names = "shapeit-phasing," + ",".join([k for k in TRUTHSETS.keys()])
 	log:
-		"{results}/evaluation/evaluation_{version}_{sample}_multiway.log"
+		"{results}/evaluation_{version}_{sample}_multiway.log"
 	shell:
 		"""
 		whatshap compare {input.phasing} {input.truthsets} --sample {wildcards.sample} --tsv-pairwise {output.pair} --tsv-multiway {output.multi} --names {params.names} &> {log}
@@ -152,12 +156,12 @@ rule multiway_evaluation:
 
 rule plot_multiway:
 	input:
-		tsv=expand("{{results}}/evaluation/{{version}}/evaluation_{{version}}_{sample}_multiway_multi.tsv", sample=JOINT_EVAL_SAMPLES),
+		tsv=expand("{{results}}/{{version}}/evaluation_{{version}}_{sample}_multiway_multi.tsv", sample=JOINT_EVAL_SAMPLES),
 		trios=FAM
 	output:
-		"{results}/evaluation/{version}/evaluation_{version}_multiway.pdf"
+		"{results}/{version}/evaluation_{version}_multiway.pdf"
 	conda:
-		"../envs/plotting.yml"
+		"../envs/plotting.yaml"
 	shell:
 		"""
 		python3 workflow/scripts/plot-multiway.py -tsv {input.tsv} -trios {input.trios} -outname {output} 

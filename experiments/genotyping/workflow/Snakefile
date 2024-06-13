@@ -13,7 +13,13 @@ RESULTS_BENCH = config['results'] + '/benchmarking-pipeline'
 RESULTS_SV_COUNTS = config['results'] + '/sv-count-comparison'
 
 coverages = ['full'] + config['downsampling']
-versions_to_run = [v for v in config['pangenie'].keys()] + [v for v in config['pangenie-modules'].keys()]
+#versions_to_run = [v for v in config['pangenie'].keys()] + [v for v in config['pangenie-modules'].keys()]
+
+versions_to_run = {}
+for callset in CALLSETS.keys():
+	versions_to_run[callset] = [v for v in CALLSETS[callset]['pangenie']] + [v for v in CALLSETS[callset]['pangenie-modules']]
+
+print(versions_to_run)
 
 for callset in CALLSETS.keys():
 	CALLSETS[callset]['multi'] = "{results}/vcf/{caller}/{caller}_filtered_ids.vcf.gz".format(results = RESULTS_MC_VCF, caller = callset)
@@ -23,12 +29,13 @@ for callset in CALLSETS.keys():
 GENOTYPED_SETS = config['genotyped_sets_external']
 for callset in CALLSETS.keys():
 	assert callset not in GENOTYPED_SETS
-	for version in versions_to_run:
+	for version in versions_to_run[callset]:
 		for coverage in coverages:
-			GENOTYPED_SETS[callset] = {}
-			GENOTYPED_SETS[callset]['vcf'] = "{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/filtered/all-samples_bi_all_lenient.vcf.gz".format(results = RESULTS_BENCH, callset = callset, version = version, coverage = coverage)
-			GENOTYPED_SETS[callset]['collapse'] = True
-			GENOTYPED_SETS[callset]['reference'] = CALLSETS[callset]['reference']
+			name = callset + '_' + version + '_' + coverage
+			GENOTYPED_SETS[name] = {}
+			GENOTYPED_SETS[name]['vcf'] = "{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/filtered/all-samples_bi_all_lenient.vcf.gz".format(results = RESULTS_BENCH, callset = callset, version = version, coverage = coverage)
+			GENOTYPED_SETS[name]['collapse'] = True
+			GENOTYPED_SETS[name]['reference'] = CALLSETS[callset]['reference']
 
 PANEL_SAMPLES = {}
 for callset in CALLSETS.keys():
@@ -50,10 +57,19 @@ def leave_one_out_plots(wildcards):
 	plots = []
 	for callset in CALLSETS.keys():
 		plots.extend( expand("{results}/leave-one-out/{callset}/plots/comparison-versions/{metric}/{metric}_{coverage}_{regions}.pdf", results=RESULTS_BENCH, callset=callset, metric=['concordance', 'precision-recall-typable', 'untyped', 'concordance-vs-untyped'], coverage=coverages, regions=['biallelic', 'multiallelic'] + [r for r in CALLSETS[callset]["regions"].keys()]))
-		plots.extend( expand("{results}/leave-one-out/{callset}/plots/comparison-regions/{metric}/{metric}_{coverage}_{versions}.pdf", results=RESULTS_BENCH, callset=callset, metric=['concordance', 'precision-recall-typable', 'untyped'], coverage=coverages, versions=versions_to_run))
-		plots.extend( expand("{results}/leave-one-out/{callset}/plots/comparison-coverages/{metric}/{metric}_{version}_{regions}.pdf", results=RESULTS_BENCH, callset=callset, metric=['concordance', 'precision-recall-typable', 'untyped'], version = versions_to_run, regions = ['biallelic', 'multiallelic'] + [r for r in CALLSETS[callset]["regions"].keys()]))
+		plots.extend( expand("{results}/leave-one-out/{callset}/plots/comparison-regions/{metric}/{metric}_{coverage}_{versions}.pdf", results=RESULTS_BENCH, callset=callset, metric=['concordance', 'precision-recall-typable', 'untyped'], coverage=coverages, versions=versions_to_run[callset]))
+		plots.extend( expand("{results}/leave-one-out/{callset}/plots/comparison-coverages/{metric}/{metric}_{version}_{regions}.pdf", results=RESULTS_BENCH, callset=callset, metric=['concordance', 'precision-recall-typable', 'untyped'], version = versions_to_run[callset], regions = ['biallelic', 'multiallelic'] + [r for r in CALLSETS[callset]["regions"].keys()]))
 	return plots
 
+
+def population_genotypes(wildcards):
+	files = []
+	for callset in CALLSETS.keys():
+		files.extend( expand("{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/whole-genome/all-samples_{what}_all.vcf.gz", results = RESULTS_BENCH, callset = callset, what = ['bi'], version = versions_to_run[callset], coverage = coverages)  )
+		files.extend( expand("{results}/population-typing/{callset}/{version}/{coverage}/evaluation/statistics/plot_bi_all_filters.tsv", results = RESULTS_BENCH, callset = callset, version = versions_to_run[callset], coverage = ['full'])  )
+		files.extend( expand("{results}/population-typing/{callset}/{version}/{coverage}/evaluation/statistics/plot_bi_all_plot.log", results = RESULTS_BENCH, callset = callset, version = versions_to_run[callset], coverage = ['full']) )
+		files.extend( expand("{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/filtered/all-samples_bi_all_lenient.vcf.gz", results = RESULTS_BENCH, callset = callset, version = versions_to_run[callset], coverage = ['full'])  )
+	return files
 
 rule all:
 	input:
@@ -62,10 +78,8 @@ rule all:
 		
 		leave_one_out_plots,
 		expand("{results}/leave-one-out/{callset}/plots/resources/resources_{callset}-{coverage}.pdf", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], coverage = coverages),
-		expand("{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/whole-genome/all-samples_{what}_all.vcf.gz", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], what = ['bi'], version = versions_to_run, coverage = coverages),
 		expand("{results}/population-typing/{callset}/sample-index.tsv", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()]),
-		expand("{results}/population-typing/{callset}/{version}/{coverage}/evaluation/statistics/plot_bi_all_filters.tsv", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], version = versions_to_run, coverage = ['full']),
-		expand("{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/filtered/all-samples_bi_all_lenient.vcf.gz", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], version = versions_to_run, coverage = ['full']),
+		population_genotypes,
 
 		expand("{results}/sv-count-comparison.pdf", results = RESULTS_SV_COUNTS),
 		expand("{results}/length-distribution.pdf", results = RESULTS_SV_COUNTS)
@@ -85,11 +99,8 @@ rule leave_one_out:
 
 rule population_typing:
 	input:
-		expand("{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/whole-genome/all-samples_{what}_all.vcf.gz", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], what = ['bi'], version = versions_to_run, coverage = coverages),
 		expand("{results}/population-typing/{callset}/sample-index.tsv", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()]),
-		expand("{results}/population-typing/{callset}/{version}/{coverage}/evaluation/statistics/plot_bi_all_filters.tsv", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], version = versions_to_run, coverage = ['full']),
-		expand("{results}/population-typing/{callset}/{version}/{coverage}/merged-vcfs/filtered/all-samples_bi_all_lenient.vcf.gz", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()], version = versions_to_run, coverage = ['full'])
-
+		population_genotypes
 
 rule sv_count_comparison:
 	input:

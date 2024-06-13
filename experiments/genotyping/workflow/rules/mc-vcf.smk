@@ -10,7 +10,7 @@ rule correct_sex_chromosomes:
 		vcf = lambda wildcards: CALLSETS[wildcards.caller]['vcf'],
 		sample_info = lambda wildcards: CALLSETS[wildcards.caller]['sample_info']
 	output:
-		"{results}/vcf/{caller}/{caller}_corrected-sex-chromosomes.vcf.gz"
+		temp("{results}/vcf/{caller}/{caller}_corrected-sex-chromosomes.vcf.gz")
 	log:
 		"{results}/vcf/{caller}/{caller}_corrected-sex-chromosomes.log"
 	conda:
@@ -69,9 +69,9 @@ rule annotate_vcf:
 		vcf="{results}/vcf/{caller}/{caller}_filtered_trim.vcf",
 		gfa=lambda wildcards: CALLSETS[wildcards.caller]['gfa']
 	output:
-		multi="{results}/vcf/{caller}/{caller}_filtered_ids.vcf",
+		multi=temp("{results}/vcf/{caller}/{caller}_filtered_ids.vcf"),
 		multi_tmp=temp("{results}/vcf/{caller}/{caller}_filtered_ids-tmp.vcf"),
-		biallelic="{results}/vcf/{caller}/{caller}_filtered_ids_biallelic.vcf",
+		biallelic=temp("{results}/vcf/{caller}/{caller}_filtered_ids_biallelic.vcf"),
 		bi_tmp=temp("{results}/vcf/{caller}/{caller}_filtered_ids-tmp_biallelic.vcf")
 	log:
 		"{results}/vcf/{caller}/{caller}_filtered_ids.log"

@@ -81,7 +81,7 @@ rule shapeit_phase_common:
 	threads: 24
         resources:
 		mem_total_mb = 100000,
-		runtime_hrs = 13
+		runtime_hrs = 20
 	shell:
 		"""
 		SHAPEIT5_phase_common --input {input.vcf} --pedigree {input.fam} --region {wildcards.chrom} --map {input.map} --output {output} --thread {threads} &> {log}

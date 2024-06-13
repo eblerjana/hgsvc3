@@ -200,7 +200,7 @@ rule convert_genotypes_to_biallelic:
 		vcf = "{results}/leave-one-out/{callset}/{version}/{sample}/{coverage}/temp/pangenie-{sample}_genotyping.vcf.gz",
 		biallelic = lambda wildcards: CALLSETS[wildcards.callset]['bi']
 	output:
-		"{results}/leave-one-out/{callset}/{version}/{sample}/{coverage}/pangenie-{sample}_genotyping-biallelic.vcf"
+		temp("{results}/leave-one-out/{callset}/{version}/{sample}/{coverage}/pangenie-{sample}_genotyping-biallelic.vcf")
 	conda:
 		"../envs/genotyping.yml"
 	resources:

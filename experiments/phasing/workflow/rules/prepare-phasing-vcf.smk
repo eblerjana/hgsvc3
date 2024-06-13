@@ -4,15 +4,15 @@ rule prepare_convert_vcf_to_bi:
 	Convert VCF to biallelic representation and restrict to specific chromosome.
 	"""
 	input:
-		lambda wildcards: GENOTYPES if wildcards.set == "genotyping" else PHASED_SET[wildcards.chrom]
+		lambda wildcards: GENOTYPES if wildcards.set == "genotyping" else RARE_VARIANTS[wildcards.chrom]
 	output:
 		"{results}/vcfs/{set}_{chrom}.vcf.gz"
 	log:
 		"{results}/vcfs/{set}_{chrom}.log"
 	conda:
-		"../envs/genotyping.yml"
+		"../envs/shapeit.yaml"
 	wildcard_constraints:
-		set = "phasing|genotyping"
+		set = "external|genotyping"
 	shell:
 		"""
 		bcftools view -r {wildcards.chrom} {input} | bcftools norm -m- -Oz -o {output} &> {log}
@@ -29,7 +29,7 @@ rule prepare_get_panel_samples:
 	output:
 		"{results}/panel-samples.tsv"
 	conda:
-		"../envs/genotyping.yml"
+		"../envs/shapeit.yaml"
 	log:
 		"{results}/panel-samples.log"
 	shell:
@@ -40,14 +40,14 @@ rule prepare_get_panel_samples:
 
 rule prepare_get_samples_list:
 	"""
-	Get list of all samples present in the phased VCF.
+	Get list of all samples present in the external VCF.
 	"""
 	input:
-		lambda wildcards: "{results}/vcfs/phasing_{chrom}.vcf.gz".format(results=wildcards.results, chrom = list(PHASED_SET.keys())[0])
+		lambda wildcards: "{results}/vcfs/external_{chrom}.vcf.gz".format(results=wildcards.results, chrom = list(RARE_VARIANTS.keys())[0])
 	output:
 		"{results}/samples.tsv"
 	conda:
-		"../envs/genotyping.yml"
+		"../envs/shapeit.yaml"
 	log:
 		"{results}/samples.log"
 	shell:
@@ -58,7 +58,7 @@ rule prepare_get_samples_list:
 
 rule prepare_extract_genotyped_samples:
 	"""
-	Restrict genotyped VCF to samples present in phased VCF.
+	Restrict genotyped VCF to samples present in external VCF.
 	Order the remaining samples in same way.
 	"""
 	input:
@@ -67,28 +67,28 @@ rule prepare_extract_genotyped_samples:
 	output:
 		"{results}/genotyping-intersected_{chrom}.vcf.gz"
 	conda:
-		"../envs/genotyping.yml"
+		"../envs/shapeit.yaml"
 	log:
 		"{results}/genotyping-intersected_{chrom}.log"
 	resources:
 	shell:
 		"""
-		bcftools view -S {input.samples} {input.vcf} -Oz -o {output} &> {log}
+		bcftools view -S {input.samples} {input.vcf} | bcftools view --min-ac 1 -Oz -o {output} &> {log}
 		tabix -p vcf {output}
 		"""
 
 
 rule prepare_extract_rare_snp_ids:
 	"""
-	In the phased VCF, extract all SNPs with AF=0 across the
+	In the external VCF, extract all SNPs with AF=0 across the
 	panel samples (= rare variants to be merged into the genotyped set)
 	"""
 	input: 
-		vcf = "{results}/vcfs/phasing_{chrom}.vcf.gz",
+		vcf = "{results}/vcfs/external_{chrom}.vcf.gz",
 		samples = "{results}/panel-samples.tsv"
 	output: "{results}/rare-snps_{chrom}.tsv"
 	conda:
-		"../envs/genotyping.yml"
+		"../envs/shapeit.yaml"
 	log:
 		"{results}/rare-snps_{chrom}.log"
 	shell:
@@ -97,26 +97,27 @@ rule prepare_extract_rare_snp_ids:
 		"""
 
 
-rule filter_phasing_vcfs:
+rule filter_vcfs:
 	"""
-	Output subset of phased and genotyped VCFs to be
+	Output subset of external and genotyped VCFs to be
 	combined later.
 	"""
 	input:
-		phasing = "{results}/vcfs/phasing_{chrom}.vcf.gz",
+		external = "{results}/vcfs/external_{chrom}.vcf.gz",
 		genotyped = "{results}/genotyping-intersected_{chrom}.vcf.gz",
 		rare_snps = "{results}/rare-snps_{chrom}.tsv"
 	output:
 		tmp_genotypes = "{results}/filtered_genotypes_{chrom}.vcf",
-		tmp_phasing = "{results}/filtered_phasing_{chrom}.vcf",
+		tmp_external = "{results}/filtered_external_{chrom}.vcf",
 	conda:
-		"../envs/genotyping.yml"
+		"../envs/shapeit.yaml"
 	log:
-		"{results}/filter_phasing_{chrom}.log"
+		"{results}/filter_external_{chrom}.log"
 	resources:
+		mem_total_mb=20000
 	shell:
 		"""
-		python3 workflow/scripts/prepare-phasing-vcfs.py {input.phasing} {input.genotyped} {input.rare_snps} {output.tmp_genotypes} {output.tmp_phasing} &> {log}
+		python3 workflow/scripts/prepare-phasing-vcfs.py {input.external} {input.genotyped} {input.rare_snps} {output.tmp_genotypes} {output.tmp_external} &> {log}
 		"""
 
 
@@ -129,11 +130,11 @@ rule prepare_add_tags:
 	output:
 		"{results}/filtered_{set}_{chrom}.vcf.gz"
 	conda:
-		"../envs/genotyping.yml"
+		"../envs/shapeit.yaml"
 	log:
 		"{results}/filtered_{set}_{chrom}.log"
 	wildcard_constraints:
-		set = "phasing|genotypes"
+		set = "external|genotypes"
 	shell:
 		"""
 		bcftools +fill-tags {input} -Oz -o {output}  -- -t AN,AC,AF &> {log}
@@ -148,17 +149,17 @@ rule prepare_combine_vcfs:
 	"""
 	input:
 		genotypes = "{results}/filtered_genotypes_{chrom}.vcf.gz",
-		phasing = "{results}/filtered_phasing_{chrom}.vcf.gz"
+		external = "{results}/filtered_external_{chrom}.vcf.gz"
 	output:
 		"{results}/phasing-input_{chrom}.vcf.gz"
 	conda:
-		"../envs/genotyping.yml"
+		"../envs/shapeit.yaml"
 	log:
 		"{results}/phasing-input_{chrom}.log"
 	resources:
 	shell:
 		"""
-		bcftools concat -a {input.genotypes} {input.phasing} -Oz -o {output} &> {log}
+		bcftools concat -a {input.genotypes} {input.external} -Oz -o {output} &> {log}
 		tabix -p vcf {output}
 		"""	
 

@@ -49,6 +49,15 @@ for k,v in trios.items():
 	n += 1
 	i += 3
 
+
+# add single samples
+for sample in samples:
+	if not sample in samples_to_plot:
+		samples_to_plot.append(sample)
+		x_values.append(i+n)
+		n += 1
+		i += 3
+
 print(x_values)
 fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
 fig.subplots_adjust(hspace=0.05)  # adjust space between axes

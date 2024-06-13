@@ -264,6 +264,7 @@ def run_plotting(vcfs, names, outname, length, populations, annotations, only_re
 					pop_c1 = callset_to_values[(callset1, sample)][1]
 					pop_c2 = callset_to_values[(callset2, sample)][1]
 					assert pop_c1 == pop_c2
+					print(sample, callset1, callset2) 
 					colors.append(pop_to_color[pop_c1])
 				
 				plt.figure()
