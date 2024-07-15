@@ -3,6 +3,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 import argparse
 from collections import defaultdict
+import statistics
 
 parser = argparse.ArgumentParser(prog='plot-qv.py', description=__doc__)
 parser.add_argument('outname', metavar='OUTNAME', help='Name of the output PDF.')
@@ -16,12 +17,12 @@ callset_samples = set([])
 assembly_samples = set([])
 
 for filename in sys.stdin:
-	print(filename)
 	fields = filename.strip().split('/')[-1].split('_')
-	mode = filename.strip().split('/')[-4]
+	mode = filename.strip().split('/')[-5]
 	callset = fields[0] + ( "" if mode == "assigned" else "-" + mode)
-	sample = fields[1]
-	haplotype = fields[2].split('.')[0]
+	callset += " (" + fields[1] + ")"
+	sample = fields[2]
+	haplotype = fields[3].split('.')[0]
 	assert haplotype in ['hap1', 'hap2']
 	samples.add(sample)
 	callset_samples.add(sample)
@@ -47,7 +48,6 @@ if args.assembly:
 		qv_values["assembly"][sample + '_' + haplotype] = float(fields[-1])
 
 
-print(qv_values)
 
 y_values = defaultdict(lambda: [])
 labels = []
@@ -69,8 +69,6 @@ with PdfPages(args.outname) as pdf:
 
 	plt.figure(figsize=(30,10))
 	for callset in y_values.keys():
-		print(x)
-		print(y_values[callset])
 		plt.plot(x, y_values[callset], marker = 'o', label = callset)
 	plt.xticks(x, labels, rotation = 'vertical')
 	plt.legend()
@@ -79,11 +77,10 @@ with PdfPages(args.outname) as pdf:
 	pdf.savefig()
 	plt.close()
 
-	plt.figure()
-	values = [ [y for y in y_values[k] if y is not None] for k in y_values.keys() ]
-	x_labels = [k for k in y_values.keys()]
+	plt.figure(figsize=(10,15))
+	values = [ [y for y in y_values[k] if y is not None] for k in sorted(y_values.keys()) ]
+	x_labels = [k for k in sorted(y_values.keys())]
 
-	plt.figure()
 	plt.boxplot(values)
 	plt.xticks([i+1 for i in range(len(x_labels))], x_labels, rotation='vertical')
 	plt.ylabel('QV')
@@ -91,6 +88,11 @@ with PdfPages(args.outname) as pdf:
 	pdf.savefig()
 
 
+	for v,k in zip(values, x_labels):
+		print(k)
+		print("Median: " +  str(statistics.median(v)))
+		print("Min: " + str(min(v)))
+		print("Max: " + str(max(v)))
 
 
 

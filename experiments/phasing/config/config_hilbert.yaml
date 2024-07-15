@@ -1,7 +1,7 @@
 
 # multi-sample VCF with genotypes to be phased
-vcf: "inputs/all-samples_bi_all_lenient.vcf.gz"
-reference: "chm13v2.0.fa"
+vcf: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/experiments/genotyping-1kg/results/benchmarking-pipeline/population-typing/MC-hgsvc3-hprc-chm13/pangenie-108/full/merged-vcfs/filtered/all-samples_bi_all_lenient.vcf.gz"
+reference: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/reference/chm13v2.0.fa"
 
 # name of the ouput folder
 outname: "results-with-rare"
@@ -10,8 +10,8 @@ outname: "results-with-rare"
 ### shapeit phasing inputs ###
 
 # trio information
-fam: inputs/1kg-trios.ped
-sex: inputs/1kg-sex.tsv
+fam: 1kg-trios.ped
+sex: 1kg-sex.tsv
 
 # whether or not to set low qual genotypes to missing
 low_qual_to_missing: True

@@ -18,6 +18,9 @@ REFERENCE = config["reference"]
 QV_SAMPLES = config["qv_samples"]
 RUN_DIR = config["run_dir"]
 
+CONSENSUS_SAMPLES = [s.strip() for s in open(config['consensus_samples'], 'r')]
+print('Computing consensus haplotypes for ' + str(len(CONSENSUS_SAMPLES)) + ' samples.')
+
 ############################### sanity check inputs ###############################
 
 if RARE_VARIANTS and MAPS:
@@ -42,7 +45,8 @@ for callset in TRUTHSETS:
 		JOINT_EVAL_SAMPLES = set(TRUTHSETS[callset]["evaluation_samples"])
 	else:
 		JOINT_EVAL_SAMPLES.intersection(set(TRUTHSETS[callset]["evaluation_samples"]))
-print(JOINT_EVAL_SAMPLES)
+
+PHASING_REGIONS = config["phasing_regions"]
 
 ###################################################################################
 
@@ -56,23 +60,42 @@ for chrom in RARE_VARIANTS.keys():
 	SCAFFOLDS[chrom] = "{results}/filtered_phasing_{chrom}.vcf.gz".format(results = prepare_outname, chrom = chrom)
 
 
+
+QV_REGIONS = {}
+QV_REGIONS["PanGenie-SHAPEIT"] = {}
+
+for region in config["qv_regions"]:
+	QV_REGIONS["PanGenie-SHAPEIT"][region] = config["qv_regions"][region]
+
+for callset in config["external_phasing"]:
+	QV_REGIONS[callset] = {}
+	for region in config["external_phasing"][callset]["qv_regions"]:
+		QV_REGIONS[callset][region] = config["external_phasing"][callset]["qv_regions"][region]
+
+
 PHASED_VCFS = config["external_phasing"]
 PHASED_VCFS["PanGenie-SHAPEIT"] = {}
 PHASED_VCFS["PanGenie-SHAPEIT"]["vcf"] = "{results}/{version}/phased_{version}.vcf.gz".format(results = shapeit_outname, version = "shapeit")
 PHASED_VCFS["PanGenie-SHAPEIT"]["reference"] = config["reference"]
 
 
+
 include: "rules/prepare-phasing-vcf.smk"
 include: "rules/shapeit-phasing.smk"
-include: "rules/evaluate-phasing.smk"
-include: "rules/compute-phasing-qvs-merqury.smk"
+include: "rules/evaluate-phasing-regions.smk"
+include: "rules/compute-phasing-qvs-merqury-regions.smk"
+include: "rules/compare-genotypes.smk"
+
 
 def evaluation_output(wildcards):
 	outfiles = []
 	for t in TRUTHSETS.keys():
-		outfiles.append("{results}/{version}/evaluation_{version}_{truthset}.pdf".format(results=shapeit_outname, truthset=t, version="shapeit"))
+		for vartype in ["snps", "all"]:
+			outfiles.append("{results}/evaluation/{version}/evaluation_{version}_{truthset}_{vartype}.pdf".format(results=shapeit_outname, truthset=t, version="shapeit", vartype=vartype))
 	if TRUTHSETS:
-		outfiles.append("{results}/{version}/evaluation_{version}_multiway.pdf".format(results=shapeit_outname, version="shapeit"))
+		for vartype in ["snps", "all"]:
+			for region in [r for r in PHASING_REGIONS.keys()] + ["all"]:
+				outfiles.append("{results}/evaluation/{version}/evaluation_{version}_{vartype}_{region}_multiway.pdf".format(results=shapeit_outname, version="shapeit", vartype=vartype, region=region))
 	return outfiles
 
 
@@ -81,8 +104,10 @@ rule all:
 		expand("{results}/phasing-input_{chrom}.vcf.gz", results = prepare_outname, chrom = [c for c in RARE_VARIANTS.keys()]),
 		expand("{results}/{version}/phased_shapeit_{chrom}.bcf", results = shapeit_outname, version="shapeit", chrom = [c for c in MAPS.keys()]),
 		evaluation_output,
-		expand("{results}/evaluation/qv-values_merqury.pdf", results = consensus_outname),
-		expand("{results}/evaluation/completeness_merqury.pdf", results = consensus_outname)
+		expand("{results}/evaluation/qv-values_merqury.pdf", results = consensus_outname, region = ["all"] + [r for r in QV_REGIONS.keys()]),
+		expand("{results}/evaluation/completeness_merqury.pdf", results = consensus_outname, region = ["all"] + [r for r in QV_REGIONS.keys()]),
+		expand("{results}/concordance/{truthset}_{version}.pdf", results = shapeit_outname, truthset = TRUTHSETS.keys(), version = "shapeit"),
+		expand("{results}/haplotypes/{callset}/all/{callset}_all_{sample}_hap{haplotype}_consensus.fasta.gz", results = consensus_outname, callset = "PanGenie-SHAPEIT" , sample = CONSENSUS_SAMPLES, haplotype = ["1", "2"])
 
 
 rule prepare_phasing:

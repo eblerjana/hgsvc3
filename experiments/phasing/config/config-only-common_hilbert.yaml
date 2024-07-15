@@ -65,14 +65,16 @@ truthsets:
      - HG01596
      - HG02282
      - HG00171
-     - HG03009
      - NA19036
      - NA19347
      - NA19317
+     - HG00733
+     - HG00514
+     - NA19240
 
 
  NYGC-CHM13:
-   vcf: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-phasing/phased_T2T_panel/1KGP.CHM13v2.0.recalibrated.snp_indel.pass.phased.vcf.gz"
+   vcf: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-phasing/phased_T2T_panel/1KGP.CHM13v2.0.whole_genome.recalibrated.snp_indel.pass.phased.native_maps.biallelic.3202.bcf.gz"
    evaluation_samples:
      - HG00732
      - HG03009
@@ -80,15 +82,26 @@ truthsets:
      - HG01596
      - HG02282
      - HG00171
-     - HG03009
      - NA19036
      - NA19347
      - NA19317
+     - HG00733
+     - HG00514
+     - NA19240
      - NA19818
      - NA19819
      - HG01256
      - HG01257
      - HG00419
+     - NA19828
+     - HG01258
+     - HG00420
+
+phasing_regions:
+  CHM13-syntenic: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/bed/chm13-shared-hg38.bed"
+  CHM13-easy: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/bed/CHM13_notinalldifficultregions.bed"
+  CHM13-lowmap-segdup: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/bed/CHM13_alllowmapandsegdupregions.bed"
+  CHM13-tandem-repeat: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/bed/CHM13_AllTandemRepeatsandHomopolymers_slop5.bed"
 
 
 ### QV value estimation ###
@@ -133,4 +146,8 @@ external_phasing:
   NYGC-GRCh38:
     vcf: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/nygc-phasing/phased_GRCh38_panel/1kGP_high_coverage_Illumina.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
     reference: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/reference/hg38.no_alt.fa"
+    qv_regions: {}
+
+qv_regions:
+  CHM13-syntenic: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/data/bed/chm13-shared-hg38.bed"
 
