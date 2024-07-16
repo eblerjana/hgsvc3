@@ -3,7 +3,7 @@
 # Genotyping
 
 This contains the pipeline used to run the genotyping experiments for the HGSVC3 paper.
-See the steps below to re-produce the analysis.
+See the steps below to replicate the analysis.
 
 ## How to replicate the results
 
