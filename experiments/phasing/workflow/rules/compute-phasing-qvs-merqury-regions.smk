@@ -330,3 +330,23 @@ rule merqury_plot_completeness:
 		"""
 		ls {input.computed_qvs} | python3 workflow/scripts/plot-completeness-merqury.py {output} &> {log}
 		"""
+
+
+rule compress_haplotypes:
+	input:
+		genomes = expand("{{results}}/haplotypes/{{callset}}/all/{{callset}}_all_{sample}_hap{haplotype}_consensus.fasta.gz", sample = CONSENSUS_SAMPLES, haplotype = ["1", "2"]),
+		reference = lambda wildcards: PHASED_VCFS[wildcards.callset]["reference"]
+	output:
+		"{results}/haplotypes/{callset}/all/{callset}_all_consensus-haplotypes.agc"
+	log:
+		"{results}/haplotypes/{callset}/all/{callset}_all_consensus-haplotypes.log"
+	conda:
+		"../envs/agc.yaml"
+	resources:
+		mem_total_mb = 30000,
+		runtime_hrs = 20
+	threads: 32
+	shell:
+		"""
+		agc create {input.reference} {input.genomes} -o {output} -t {threads} &> {log}
+		"""

@@ -16,7 +16,7 @@ READS = config["reads"]
 ASSEMBLY_QVS = config["assembly_qvs"]
 REFERENCE = config["reference"]
 QV_SAMPLES = config["qv_samples"]
-RUN_DIR = config["run_dir"]
+
 
 CONSENSUS_SAMPLES = [s.strip() for s in open(config['consensus_samples'], 'r')]
 print('Computing consensus haplotypes for ' + str(len(CONSENSUS_SAMPLES)) + ' samples.')
@@ -107,7 +107,8 @@ rule all:
 		expand("{results}/evaluation/qv-values_merqury.pdf", results = consensus_outname, region = ["all"] + [r for r in QV_REGIONS.keys()]),
 		expand("{results}/evaluation/completeness_merqury.pdf", results = consensus_outname, region = ["all"] + [r for r in QV_REGIONS.keys()]),
 		expand("{results}/concordance/{truthset}_{version}.pdf", results = shapeit_outname, truthset = TRUTHSETS.keys(), version = "shapeit"),
-		expand("{results}/haplotypes/{callset}/all/{callset}_all_{sample}_hap{haplotype}_consensus.fasta.gz", results = consensus_outname, callset = "PanGenie-SHAPEIT" , sample = CONSENSUS_SAMPLES, haplotype = ["1", "2"])
+		expand("{results}/haplotypes/{callset}/all/{callset}_all_{sample}_hap{haplotype}_consensus.fasta.gz", results = consensus_outname, callset = "PanGenie-SHAPEIT" , sample = CONSENSUS_SAMPLES, haplotype = ["1", "2"]),
+		expand("{results}/haplotypes/{callset}/all/{callset}_all_consensus-haplotypes.agc", results = consensus_outname, callset = "PanGenie-SHAPEIT")
 
 
 rule prepare_phasing:
