@@ -16,7 +16,12 @@ def get_type_from_ID(varid):
 	vartype = fields[2]
 	assert vartype in ["SNV", "DEL", "INS", "COMPLEX"]
 	return vartype
-	
+
+
+def get_len_from_ID(varid):
+	fields = varid.split('-')
+	varlen = fields[-1]
+	return varlen	
 
 if __name__ == "__main__":
 
@@ -77,8 +82,8 @@ if __name__ == "__main__":
 			# as it can be directly derived from start and ALT allele.
 			if not svlen_present:
 				sys.stderr.write("Added SVLEN for record " + fields[0] + ":" + fields[1] + "\n")
-				length = max([len(ref_allele), len(alt_allele)])
-				info_fields["SVLEN"] = str(length)
+				assert 'ID' in info_fields
+				info_fields["SVLEN"] = get_len_from_ID(info_fields['ID'])
 			if not svtype_present:
 				sys.stderr.write("Added SVTYPE for record " + fields[0] + ":" + fields[1] + "\n")
 				assert 'ID' in info_fields
