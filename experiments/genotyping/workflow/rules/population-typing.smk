@@ -84,7 +84,6 @@ rule genotyping:
 	shell:
 		"""
 		gunzip -c {input.reads} > {output.reads}
-		module load Singularity
 		(/usr/bin/time -v {params.pangenie} -i {output.reads} -v {input.panel} -r /hilbert{input.reference} -o {params.out_prefix} -s {wildcards.sample} -j {threads} -t {threads} -g ) &> {log}
 		"""
 
@@ -112,7 +111,6 @@ rule genotyping_index:
 		"{results}/population-typing/{callset}/{version}/{coverage}/genotyping/indexing/indexing_benchmark.txt"
 	shell:
 		"""
-		module load Singularity
 		(/usr/bin/time -v {params.pangenie}-index -v {input.panel} -r /hilbert{input.reference} -o {params.out_prefix} -t {threads} ) &> {log}
 		"""
 
@@ -142,7 +140,6 @@ rule genotyping_genotype:
 		"{results}/population-typing/{callset}/{version}/{coverage}/genotyping/pangenie-{sample}_benchmark.txt"
 	shell:
 		"""
-		module load Singularity
 		(/usr/bin/time -v {params.pangenie} {params.pangenie_params} -f {params.in_prefix} -i <(gunzip -c {input.reads}) -o {params.out_prefix} -j {threads} -t {threads} -s {wildcards.sample} ) &> {log}
 		"""
 

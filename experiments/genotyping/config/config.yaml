@@ -170,5 +170,5 @@ pangenie: {}
 
 # PanGenie command to be used for not yet released version of PanGenie (leave empty for now)
 pangenie-modules:
- pangenie: "singularity exec --bind /:/hilbert eblerjana_eblerjana_pangenie-v3.1.0.sif PanGenie"
- pangenie-108: "singularity exec --bind /:/hilbert eblerjana_eblerjana_pangenie-v3.1.0.sif PanGenie -a 108"
+ pangenie: "module load Singularity && singularity exec --bind /:/hilbert eblerjana_eblerjana_pangenie-v3.1.0.sif PanGenie"
+ pangenie-108: "module load Singularity && singularity exec --bind /:/hilbert eblerjana_eblerjana_pangenie-v3.1.0.sif PanGenie -a 108"
