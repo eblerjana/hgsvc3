@@ -81,7 +81,7 @@ rule all:
 		expand("{results}/population-typing/{callset}/sample-index.tsv", results = RESULTS_BENCH, callset = [c for c in CALLSETS.keys()]),
 		population_genotypes,
 
-		expand("{results}/sv-count-comparison.pdf", results = RESULTS_SV_COUNTS),
+		expand("{results}/sv-count-comparison_{which}.pdf", results = RESULTS_SV_COUNTS, which = ["het", "all"]),
 		expand("{results}/length-distribution.pdf", results = RESULTS_SV_COUNTS)
 
 
@@ -104,5 +104,5 @@ rule population_typing:
 
 rule sv_count_comparison:
 	input:
-		expand("{results}/sv-count-comparison.pdf", results = RESULTS_SV_COUNTS),
+		expand("{results}/sv-count-comparison_{which}.pdf", results = RESULTS_SV_COUNTS, which=["all", "het"]),
 		expand("{results}/length-distribution.pdf", results = RESULTS_SV_COUNTS)

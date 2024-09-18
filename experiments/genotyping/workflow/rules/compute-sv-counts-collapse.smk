@@ -117,17 +117,39 @@ rule plot_sv_counts_filtered:
 		collapse = lambda wildcards: expand("{{results}}/{source}/vcfs/{source}_intersection_full_collapsed.vcf.gz", source = [s for s in callsets if GENOTYPED_SETS[s]['collapse']]),
 		populations = POPULATIONS
 	output:
-		"{results}/sv-count-comparison.pdf"
+		"{results}/sv-count-comparison_all.pdf"
 	log:
-		"{results}/sv-count-comparison.log"
+		"{results}/sv-count-comparison_all.log"
 	conda:
 		"../envs/plotting.yml"
 	params:
 		names_raw = ' '.join([s for s in callsets if not GENOTYPED_SETS[s]['collapse']]),
 		names_collapsed = ' '.join([s for s in callsets if GENOTYPED_SETS[s]['collapse']]),
-		outname = "{results}/sv-count-comparison",
+		outname = "{results}/sv-count-comparison_all",
 	shell:
 		"python3 workflow/scripts/plot-sv-counts.py -vcfs {input.collapse} {input.raw} -names {params.names_collapsed} {params.names_raw} -o {params.outname} -pop {input.populations} &> {log}"
+
+
+
+rule plot_sv_counts_filtered_het:
+	input:
+		raw = lambda wildcards: expand("{{results}}/{source}/vcfs/{source}_intersection_full_raw.vcf.gz", source = [s for s in callsets if not GENOTYPED_SETS[s]['collapse']]),
+		collapse = lambda wildcards: expand("{{results}}/{source}/vcfs/{source}_intersection_full_collapsed.vcf.gz", source = [s for s in callsets if GENOTYPED_SETS[s]['collapse']]),
+		populations = POPULATIONS
+	output:
+		"{results}/sv-count-comparison_het.pdf"
+	log:
+		"{results}/sv-count-comparison_het.log"
+	conda:
+		"../envs/plotting.yml"
+	params:
+		names_raw = ' '.join([s for s in callsets if not GENOTYPED_SETS[s]['collapse']]),
+		names_collapsed = ' '.join([s for s in callsets if GENOTYPED_SETS[s]['collapse']]),
+		outname = "{results}/sv-count-comparison_het",
+	shell:
+		"python3 workflow/scripts/plot-sv-counts.py -vcfs {input.collapse} {input.raw} -names {params.names_collapsed} {params.names_raw} -o {params.outname} -pop {input.populations} --het &> {log}"
+
+
 
 
 

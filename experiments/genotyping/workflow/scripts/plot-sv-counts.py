@@ -62,10 +62,17 @@ def parse_vcf(filename, callsetname, outfile, length, sample_to_pop, annotations
 		for genotype_info, sample in zip(fields_to_consider, samples):
 			genotype = genotype_info.split(':')[gt_index]
 			assert genotype in ['0', '1', '.', '0/0', '0/1', '1/0', '1/1', './1', '1/.', '0/.', './0', '0|0', '0|1', '1|0', '1|1', './.', '.', '.|.', '.|1', '1|.', '0|.', '.|0']
-			nr_alts = genotype.count('1')
+
 			if not hap:
-				# count het/hom only once
-				nr_alts = 1 if (nr_alts > 1) else nr_alts
+				# count all present SVs
+				nr_alts = 1 if '1' in genotype else 0
+			else:
+				# count only heterozygous SVs
+				if genotype in ['1', '0/1', '1/0', '0|1', '1|0']:
+					nr_alts = 1
+				else:
+					nr_alts = 0
+			
 			if nr_alts > 0:
 				counts[(sample, af_category, 'all')] += nr_alts
 				counts[(sample, 'all', 'all')] += nr_alts
@@ -88,7 +95,7 @@ def parse_vcf(filename, callsetname, outfile, length, sample_to_pop, annotations
 		is_afr = 'AFR' if pop == 'AFR' else 'non-AFR'
 		for annotation in ['all', 'none'] + annotations:
 			for allele_freq in ['all', '<1%', '1-5%', '>5%']:
-				var_count = (counts[(sample, allele_freq, annotation)] / 2.0) if hap else counts[(sample, allele_freq, annotation)]
+				var_count = counts[(sample, allele_freq, annotation)]
 				outfile.write('\t'.join([sample, callsetname, str(var_count), allele_freq, annotation, sample_to_pop[sample], is_afr, callsetname + '-' + is_afr]) + '\n')
 
 	sys.stderr.write('Processed callset ' + callsetname +  ' (' + str(nr_vars) + ' variants, ' + str(len(samples)) + ' samples).\n')
@@ -96,7 +103,7 @@ def parse_vcf(filename, callsetname, outfile, length, sample_to_pop, annotations
 		
 
 def run_plotting(vcfs, names, outname, length, populations, annotations, only_regions, hap):
-	y_name = 'avg number of SVs per haplotype' if hap else 'number of SVs per sample'
+	y_name = 'number of heterozygous SVs per sample' if hap else 'number of SVs per sample'
 	sample_to_pop = parse_populations(populations)
 	with open(outname + '.tsv', 'w') as outfile:
 		# write header
@@ -312,9 +319,9 @@ if __name__ == '__main__':
 	parser.add_argument('-o', metavar='OUTNAME', required= True, help='name prefix of the output files (<prefix>.pdf and <prefix>.tsv will be produced).')
 	parser.add_argument('--length', metavar='LENGTH', help='Minimum allele length to consider', default=0, type=int)
 	parser.add_argument('--only-regions', action='store_true', help='Only show anotation regions in count plots and skip all.', default=False)
-	parser.add_argument('--hap', action='store_true', help='Count average number of SVs per haplotype instead.', default=False)
+	parser.add_argument('--het', action='store_true', help='Count number of heterozygous SVs only.', default=False)
 	args = parser.parse_args()
 
 	# make sure that the same number of callsets/names is provided
 	assert len(args.vcfs) == len(args.names)
-	run_plotting(args.vcfs, args.names, args.o, args.length, args.pop, args.annotations, args.only_regions, args.hap)
+	run_plotting(args.vcfs, args.names, args.o, args.length, args.pop, args.annotations, args.only_regions, args.het)
