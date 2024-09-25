@@ -132,7 +132,6 @@ phasing_regions:
 ### QV value estimation ###
 
 reads: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/experiments/genotyping-1kg/1kg-reads-updated.tsv"
-run_dir: "/gpfs/project/projects/medbioinf/users/ebler/hgsvc3/experiments/phasing-1kg/"
 qv_samples:
  - HG02321
  - HG03110
