@@ -13,7 +13,8 @@ See the steps below to replicate the analysis.
 
 Reproduce PanGenie results using the pipeline https://github.com/eblerjana/hgsvc3/tree/main/experiments/genotyping or download PanGenie 1kg genotypes and panel for HGSVC3 data from:
 ```bat
-TODO
+wget -P inputs/ http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Genotyping_1kGP/20240716_PanGenie-genotypes/pangenie_chm13_all_decomposed_lenient.vcf.gz
+wget -P inputs/ http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Genotyping_1kGP/20240716_PanGenie-genotypes/MC_hgsvc3-hprc_chm13_filtered_decomposed.vcf.gz
 ```
 
 
@@ -32,7 +33,7 @@ gunzip inputs/hg38.no_alt.fa.gz
 ```
 
 
-Download all genetic maps for CHM13 `` chr*.t2t.gmap.resorted.gmap.gz" `` from: https://github.com/JosephLalli/phasing_T2T/tree/master/t2t_lifted_chrom_maps and put them to ``inputs/``
+Download all genetic maps for CHM13 `` chr*.t2t.gmap.resorted.gmap.gz" `` from: [https://github.com/JosephLalli/phasing_T2T/tree/master/t2t_lifted_chrom_maps](https://github.com/JosephLalli/phasing_T2T/tree/master/resources/recombination_maps/t2t_lifted_from_hapmap) and put them to ``inputs/``
 
 
 Download Illumina-based SNP and indel calls using the provided Snakefile:
