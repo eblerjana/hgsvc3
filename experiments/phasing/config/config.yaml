@@ -1,6 +1,6 @@
 
 # multi-sample VCF with genotypes to be phased
-vcf: "inputs/all-samples_bi_all_lenient.vcf.gz"
+vcf: "inputs/pangenie_chm13_all_decomposed_lenient.vcf.gz"
 reference: "inputs/chm13v2.0.fa"
 
 # name of the ouput folder
@@ -46,7 +46,7 @@ maps:
 ####### Optional: combine input re-genotyped VCF with rare variants from existing phased VCF #######
 
 
-panel_vcf: "inputs/MC-hgsvc3-hprc-chm13_filtered_ids_biallelic.vcf.gz"
+panel_vcf: "inputs/MC_hgsvc3-hprc_chm13_filtered_decomposed.vcf.gz"
 
 # existing phased VCFs (one for each chromosome)
 rare_variants:
