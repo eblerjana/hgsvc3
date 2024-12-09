@@ -350,3 +350,34 @@ rule compress_haplotypes:
 		"""
 		agc create {input.reference} {input.genomes} -o {output} -t {threads} &> {log}
 		"""
+
+
+rule compress_haplotypes_qv:
+	input:
+		genomes = expand("{{results}}/haplotypes/{{callset}}/all/{{callset}}_all_{sample}_hap{haplotype}_consensus.fasta.gz", sample = QV_SAMPLES, haplotype = ["1", "2"]),
+		reference = lambda wildcards: PHASED_VCFS[wildcards.callset]["reference"]
+	output:
+		"{results}/haplotypes/{callset}/all/{callset}_qv_consensus-haplotypes.agc"
+	log:
+		"{results}/haplotypes/{callset}/all/{callset}_qv_consensus-haplotypes.log"
+	conda:
+		"../envs/agc.yaml"
+	resources:
+		mem_total_mb = 30000,
+		runtime_hrs = 20
+	threads: 32
+	shell:
+		"""
+		agc create {input.reference} {input.genomes} -o {output} -t {threads} &> {log}
+		"""
+
+
+rule collect_stats:
+	input:
+		expand("{{results}}/evaluation/assigned/{{callset}}/all/{sample}_hap{haplotype}/{{callset}}_all_{sample}_hap{haplotype}.qv", sample=QV_SAMPLES, haplotype=["1", "2"])
+	output:
+		"{results}/haplotypes/{callset}/all/{callset}_all_summary.tsv"
+	shell:
+		"""
+		ls {input} | python3 workflow/scripts/collect-stats.py > {output}
+		"""

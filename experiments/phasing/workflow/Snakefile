@@ -101,15 +101,16 @@ def evaluation_output(wildcards):
 
 rule all:
 	input:
-		expand("{results}/phasing-input_{chrom}.vcf.gz", results = prepare_outname, chrom = [c for c in RARE_VARIANTS.keys()]),
-		expand("{results}/{version}/phased_shapeit_{chrom}.bcf", results = shapeit_outname, version="shapeit", chrom = [c for c in MAPS.keys()]),
-		evaluation_output,
-		expand("{results}/evaluation/qv-values_merqury.pdf", results = consensus_outname, region = ["all"] + [r for r in QV_REGIONS.keys()]),
-		expand("{results}/evaluation/completeness_merqury.pdf", results = consensus_outname, region = ["all"] + [r for r in QV_REGIONS.keys()]),
-		expand("{results}/concordance/{truthset}_{version}.pdf", results = shapeit_outname, truthset = TRUTHSETS.keys(), version = "shapeit"),
-		expand("{results}/haplotypes/{callset}/all/{callset}_all_{sample}_hap{haplotype}_consensus.fasta.gz", results = consensus_outname, callset = "PanGenie-SHAPEIT" , sample = CONSENSUS_SAMPLES, haplotype = ["1", "2"]),
-		expand("{results}/haplotypes/{callset}/all/{callset}_all_consensus-haplotypes.agc", results = consensus_outname, callset = "PanGenie-SHAPEIT")
-
+#		expand("{results}/phasing-input_{chrom}.vcf.gz", results = prepare_outname, chrom = [c for c in RARE_VARIANTS.keys()]),
+#		expand("{results}/{version}/phased_shapeit_{chrom}.bcf", results = shapeit_outname, version="shapeit", chrom = [c for c in MAPS.keys()]),
+#		evaluation_output,
+#		expand("{results}/evaluation/qv-values_merqury.pdf", results = consensus_outname, region = ["all"] + [r for r in QV_REGIONS.keys()]),
+#		expand("{results}/evaluation/completeness_merqury.pdf", results = consensus_outname, region = ["all"] + [r for r in QV_REGIONS.keys()]),
+#		expand("{results}/concordance/{truthset}_{version}.pdf", results = shapeit_outname, truthset = TRUTHSETS.keys(), version = "shapeit"),
+#		expand("{results}/haplotypes/{callset}/all/{callset}_all_{sample}_hap{haplotype}_consensus.fasta.gz", results = consensus_outname, callset = "PanGenie-SHAPEIT" , sample = CONSENSUS_SAMPLES, haplotype = ["1", "2"]),
+#		expand("{results}/haplotypes/{callset}/all/{callset}_all_consensus-haplotypes.agc", results = consensus_outname, callset = "PanGenie-SHAPEIT"),
+		expand("{results}/haplotypes/{callset}/all/{callset}_qv_consensus-haplotypes.agc", results = consensus_outname, callset = [c for c in PHASED_VCFS.keys() if c != "PanGenie-SHAPEIT"]),
+		expand("{results}/haplotypes/{callset}/all/{callset}_all_summary.tsv", results = consensus_outname, callset = PHASED_VCFS.keys())
 
 rule prepare_phasing:
 	input:
