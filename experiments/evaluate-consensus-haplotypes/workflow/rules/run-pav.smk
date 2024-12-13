@@ -59,8 +59,8 @@ rule run_pav:
 	benchmark:
 		"{results}/pav_{sample}_{haplotype}/pav.benchmark"
 	resources:
-		mem_mb = 200000,
-		walltime = "18:00:00"	
+		mem_mb = 150000,
+		walltime = "24:00:00"	
 	singularity:
 		"workflow/container/pav_latest.sif"
 	shell:

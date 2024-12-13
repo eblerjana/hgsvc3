@@ -82,6 +82,7 @@ def parse_chromosome_length(line):
 class Statistics:
 	def __init__(self, start, end, length):
 		self.bp_changes_error = 0
+		self.nr_svs = 0
 		self.stats = {}
 		self.stats['FN_UNKNOWN'] = 0
 		self.stats['FP_UNKNOWN'] = 0
@@ -114,9 +115,9 @@ class Statistics:
 		score = self.compute_score()
 		stats_to_print = ""
 		if not skip_header:
-			stats_to_print = '\t'.join(['ref_HT', 'total_vars', 'skipped_vars'] + keys + ['total_length', 'bp_changes', 'score', 'score_phred', 'score_phred_interval', 'QV_h1', 'QV_h2', 'QV_avg']) + '\n'
+			stats_to_print = '\t'.join(['ref_HT', 'total_vars', 'skipped_vars'] + keys + ['total_length', 'bp_changes', 'score', 'score_phred', 'score_phred_interval', 'nr_sv_err', 'QV_h1', 'QV_h2', 'QV_avg']) + '\n'
 		avg_qv = 'nan' if (qv_h1 == 'nan') or (qv_h2 == 'nan') else (float(qv_h1) + float(qv_h2)) / 2
-		stats_to_print += '\t'.join([name, str(self.total), str(self.skipped)] + [str(self.stats[k]) for k in keys] + [str(self.length), str(self.bp_changes_error), str(score), str(self.compute_phred_score()), str(interval_score), qv_h1, qv_h2, str(avg_qv)])
+		stats_to_print += '\t'.join([name, str(self.total), str(self.skipped)] + [str(self.stats[k]) for k in keys] + [str(self.length), str(self.bp_changes_error), str(score), str(self.compute_phred_score()), str(interval_score), str(self.nr_svs), qv_h1, qv_h2, str(avg_qv)])
 		return stats_to_print
 
 
@@ -175,6 +176,7 @@ if __name__ == '__main__':
 			assert 'ID' in info_fields
 			var_id = info_fields['ID']
 			bp_change = 1 if 'SNV' in var_id else abs(int(info_fields['SVLEN']))
+			is_sv = False if 'SNV' in var_id else abs(int(info_fields['SVLEN'])) > 20
 			gt = fields[9].strip().split('|')
 			label = analyze_gt_assemb(gt[2], gt[0], gt[1]) if (args.reference == "assembly") else analyze_gt_cons(gt[2], gt[0], gt[1])
 			end = int(fields[1]) + len(fields[3])
@@ -186,12 +188,16 @@ if __name__ == '__main__':
 				
 				if label not in ['TP', 'UNKNOWN']:
 					total_stats.bp_changes_error += bp_change
+					total_stats.nr_svs += 1 if is_sv else 0
 					interval_stats[chrom][interval_id].bp_changes_error += bp_change
+					interval_stats[chrom][interval_id].nr_svs += 1 if is_sv else 0
 
 					outfile_err.write('\t'.join([fields[0], fields[1], str(end), str(bp_change), info_fields['ID'], label]) + '\n')
 					if label in ['FP_BOTH', 'FN_BOTH']:
 						total_stats.bp_changes_error += bp_change
+						total_stats.nr_svs += 1 if is_sv else 0
 						interval_stats[chrom][interval_id].bp_changes_error += bp_change
+						interval_stats[chrom][interval_id].nr_svs += 1 if is_sv else 0
 			else:
 				total_stats.skipped += 1
 				interval_stats[chrom][interval_id].skipped += 1

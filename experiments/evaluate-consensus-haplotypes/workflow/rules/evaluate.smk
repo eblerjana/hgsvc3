@@ -71,7 +71,9 @@ rule plot_score_hist:
 		"../envs/plotting.yaml"
 	log:
 		"{results}/evaluation/{region}/plots/{sample}_{haplotype}_scores.log"
+	params:
+		name = "{sample}_{haplotype}"
 	shell:
 		"""
-		cat {input} | python3 workflow/scripts/plot-score-hist.py {output} &> {log}
+		cat {input} | python3 workflow/scripts/plot-score-hist.py {output} {params.name} &> {log}
 		"""

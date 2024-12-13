@@ -26,7 +26,7 @@ for line in sys.stdin:
 
 plt.figure()
 
-max_v = max(max(len_ins), max(len_del), max(len_inv))
+max_v = max(max(len_ins), max(len_del), max(len_inv)) if len_inv else max(max(len_ins), max(len_del))
 min_v = 1
 
 for l,k in zip([len_ins, len_del, len_inv, len_snp], ['INS', 'DEL', 'INV', 'SNV']):
